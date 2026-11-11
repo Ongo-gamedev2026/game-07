@@ -1,22 +1,1049 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>게임 준비 중</title>
-<style>
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center;
-         background: #0d0b1e; color: #ecebff; font-family: system-ui, sans-serif; text-align: center; padding: 16px; }
-  h1 { font-size: 28px; }
-  p { color: #9a96c8; }
-  a { color: #3ee6ff; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마법사 액션 로그라이크 - 스테이지 1</title>
+    <style>
+        /* 기본 리셋 및 전체 화면 중앙 정렬 설정 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 게임 컨테이너 및 캔버스 스타일 */
+        #game-container {
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            background-color: #e3d2ab; /* 목업의 연한 베이지/크림색 바닥 */
+            cursor: crosshair;
+        }
+
+        /* 오버레이 화면 (시작 화면, 결과 화면) */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 20, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: #ff5555;
+            margin-bottom: 15px;
+        }
+
+        .clear-title {
+            color: #4caf50 !important;
+        }
+
+        .guide-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 520px;
+            margin-bottom: 25px;
+            text-align: left;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .guide-box h3 {
+            color: #4fc3f7;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(245, 124, 0, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 20px rgba(245, 124, 0, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        /* 튜토리얼 팁 표시 */
+        #tip-banner {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 5;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
 </head>
 <body>
-  <div>
-    <h1>🛠️ 게임 준비 중</h1>
-    <p>내 작업실의 <b>⬆️ 게임 올리기</b>를 눌러<br>AI가 만들어 준 게임 코드를 <b>index.html</b> 이름으로 올리면<br>여기에 내 게임이 나타나요!</p>
-    <p><a href="../">← 내 작업실로</a></p>
-  </div>
-</body>
-</html>
+
+    <div id="game-container">
+        <!-- 메인 게임 캔버스 (960x540 16:9 비율) -->
+        <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+        <!-- 가이드 팁 배너 -->
+        <div id="tip-banner" class="hidden">W,A,S,D: 이동 | 마우스 좌/우클릭: 공격 | SPACE: 대쉬 | Q,E: 속성 변경</div>
+
+        <!-- 1. 시작 화면 -->
+        <div id="start-screen" class="overlay">
+            <h1>속성 마법사: 스테이지 1</h1>
+            <div class="guide-box">
+                <h3>🎮 게임 조작법</h3>
+                <ul>
+                    <li><b>이동:</b> W, A, S, D 키</li>
+                    <li><b>대쉬:</b> SPACE 키 (순간 회피)</li>
+                    <li><b>속성 교체:</b> Q, E 키 또는 마우스 휠</li>
+                    <li><b>기본 마법:</b> 마우스 좌클릭</li>
+                    <li><b>특수 마법:</b> 마우스 우클릭 (쿨타임 존재)</li>
+                </ul>
+                <br>
+                <h3>🔥 상성 규칙 (약점 공격 시 2배 데미지!)</h3>
+                <p>• <b>불(🔥)</b>은 번개(⚡)에 강함</p>
+                <p>• <b>물(💧)</b>은 불(🔥)에 강함</p>
+                <p>• <b>번개(⚡)</b>는 물(💧)에 강함</p>
+            </div>
+            <button id="start-btn" class="btn">모험 시작하기</button>
+        </div>
+
+        <!-- 2. 게임 오버 / 클리어 결과 화면 -->
+        <div id="result-screen" class="overlay hidden">
+            <h2 id="result-title">게임 오버</h2>
+            <div id="result-desc" class="guide-box" style="text-align: center;">
+                <p id="result-info">몬스터에게 패배했습니다...</p>
+            </div>
+            <button id="restart-btn" class="btn">다시 도전하기</button>
+        </div>
+    </div>
+
+<script>
+// =============================================================================
+// [설정값] 기획서에 명시되지 않은 속도, 시간, 데미지, 개수 등을 모아둔 설정 객체
+// =============================================================================
+const CONFIG = {
+    // 플레이어 설정
+    PLAYER_MAX_HP: 100,
+    PLAYER_SPEED: 3.5,
+    PLAYER_RADIUS: 16,
+    DASH_SPEED: 12,
+    DASH_DURATION: 12, // 프레임 단위 (약 0.2초)
+    DASH_COOLDOWN: 60,  // 프레임 단위 (약 1초)
+
+    // 마법 발사체 설정
+    ATTACK_COOLDOWN: 15,       // 좌클릭 공격 연사 속도
+    SPECIAL_COOLDOWN: 90,      // 우클릭 특수기 쿨타임 (1.5초)
+    PROJECTILE_SPEED: 7.5,
+
+    // 방 & 진행 설정
+    TOTAL_NORMAL_ROOMS: 5,     // 일반 방 개수 (6번째는 보스방)
+    MONSTER_COUNT_PER_ROOM: 4, // 일반 방당 등장 몬스터 수
+    MAGIC_BOOK_ROOM_INDEX: 3,  // 3번째 방을 마법서(보상) 방으로 지정
+
+    // 일반 몬스터 설정
+    MONSTER_HP: 40,
+    MONSTER_SPEED: 1.6,
+    MONSTER_RADIUS: 24,
+    MONSTER_DAMAGE: 10,
+
+    // 보스 몬스터 설정
+    BOSS_HP: 350,
+    BOSS_SPEED: 1.2,
+    BOSS_RADIUS: 55,
+    BOSS_DAMAGE: 20,
+
+    // 속성 정의 및 상성 데이터
+    ELEMENTS: {
+        FIRE: { name: '불', emoji: '🔥', color: '#ff4444', strongTo: 'LIGHTNING', weakTo: 'WATER' },
+        WATER: { name: '물', emoji: '💧', color: '#3399ff', strongTo: 'FIRE', weakTo: 'LIGHTNING' },
+        LIGHTNING: { name: '번개', emoji: '⚡', color: '#ffcc00', strongTo: 'WATER', weakTo: 'FIRE' }
+    }
+};
+
+// =============================================================================
+// 캔버스 크로스 브라우저 호환용 라운드 사각형 함수
+// =============================================================================
+function drawRoundedRect(ctx, x, y, width, height, radius, fill, stroke) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+}
+
+// =============================================================================
+// 게임 전역 상태 변수
+// =============================================================================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let gameState = 'START'; // 'START', 'PLAYING', 'CLEAR', 'GAMEOVER'
+let currentRoomIndex = 1; // 1~5: 일반방/보상방, 6: 보스방
+let roomCleared = false;
+let magicBookPicked = false;
+
+// 입력 상태 관리
+const keys = {};
+const mouse = { x: canvas.width / 2, y: canvas.height / 2, leftDown: false, rightDown: false };
+
+// 게임 객체들
+let player = null;
+let monsters = [];
+let projectiles = [];
+let magicBook = null;
+let doors = [];
+let particles = [];
+
+// =============================================================================
+// 클래스 정의 (플레이어, 몬스터, 발사체, 마법서, 이펙트)
+// =============================================================================
+
+// 1. 플레이어 클래스 (목업의 지팡이+모자를 든 졸라맨 마법사)
+class Player {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.hp = CONFIG.PLAYER_MAX_HP;
+        this.maxHp = CONFIG.PLAYER_MAX_HP;
+        this.radius = CONFIG.PLAYER_RADIUS;
+        
+        // 속성 목록 및 현재 선택된 속성 인덱스 (0:FIRE, 1:WATER, 2:LIGHTNING)
+        this.elementList = ['FIRE', 'WATER', 'LIGHTNING'];
+        this.currentElementIdx = 1; // 기본 'WATER(물)'로 시작
+
+        this.dashTimer = 0;
+        this.dashCooldown = 0;
+        this.attackCooldown = 0;
+        this.specialCooldown = 0;
+        this.invulnerableTimer = 0;
+
+        this.vx = 0;
+        this.vy = 0;
+        this.damageMultiplier = 1.0;
+    }
+
+    getCurrentElement() {
+        return this.elementList[this.currentElementIdx];
+    }
+
+    switchElement(dir) {
+        this.currentElementIdx = (this.currentElementIdx + dir + this.elementList.length) % this.elementList.length;
+    }
+
+    update() {
+        if (this.attackCooldown > 0) this.attackCooldown--;
+        if (this.specialCooldown > 0) this.specialCooldown--;
+        if (this.dashCooldown > 0) this.dashCooldown--;
+        if (this.invulnerableTimer > 0) this.invulnerableTimer--;
+
+        let currentSpeed = CONFIG.PLAYER_SPEED;
+        if (this.dashTimer > 0) {
+            this.dashTimer--;
+            currentSpeed = CONFIG.DASH_SPEED;
+        }
+
+        this.vx = 0;
+        this.vy = 0;
+        if (keys['w'] || keys['W'] || keys['ㅈ']) this.vy -= 1;
+        if (keys['s'] || keys['S'] || keys['ㄴ']) this.vy += 1;
+        if (keys['a'] || keys['A'] || keys['ㅁ']) this.vx -= 1;
+        if (keys['d'] || keys['D'] || keys['ㅇ']) this.vx += 1;
+
+        if (this.vx !== 0 && this.vy !== 0) {
+            this.vx *= 0.7071;
+            this.vy *= 0.7071;
+        }
+
+        this.x += this.vx * currentSpeed;
+        this.y += this.vy * currentSpeed;
+
+        const wallMargin = 45;
+        this.x = Math.max(wallMargin, Math.min(canvas.width - wallMargin, this.x));
+        this.y = Math.max(wallMargin, Math.min(canvas.height - wallMargin, this.y));
+
+        if (mouse.leftDown && this.attackCooldown === 0) {
+            this.shootPrimary();
+        }
+        if (mouse.rightDown && this.specialCooldown === 0) {
+            this.shootSpecial();
+        }
+    }
+
+    dash() {
+        if (this.dashCooldown === 0 && (this.vx !== 0 || this.vy !== 0)) {
+            this.dashTimer = CONFIG.DASH_DURATION;
+            this.dashCooldown = CONFIG.DASH_COOLDOWN;
+            createDashParticles(this.x, this.y);
+        }
+    }
+
+    shootPrimary() {
+        this.attackCooldown = CONFIG.ATTACK_COOLDOWN;
+        const angle = Math.atan2(mouse.y - this.y, mouse.x - this.x);
+        projectiles.push(new Projectile(
+            this.x, this.y, angle, 
+            this.getCurrentElement(), 
+            15 * this.damageMultiplier, 
+            false
+        ));
+    }
+
+    shootSpecial() {
+        this.specialCooldown = CONFIG.SPECIAL_COOLDOWN;
+        const baseAngle = Math.atan2(mouse.y - this.y, mouse.x - this.x);
+        [-0.25, 0, 0.25].forEach(offset => {
+            projectiles.push(new Projectile(
+                this.x, this.y, baseAngle + offset, 
+                this.getCurrentElement(), 
+                25 * this.damageMultiplier, 
+                true
+            ));
+        });
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        if (this.invulnerableTimer % 4 >= 2) {
+            ctx.restore();
+            return;
+        }
+
+        const angle = Math.atan2(mouse.y - this.y, mouse.x - this.x);
+
+        // 1) 그림자
+        ctx.beginPath();
+        ctx.ellipse(0, 22, 14, 6, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        ctx.fill();
+
+        // 2) 졸라맨 몸통
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 2.5;
+
+        // 머리 (원)
+        ctx.beginPath();
+        ctx.arc(0, -6, 7, 0, Math.PI * 2);
+        ctx.fillStyle = '#fce4ec';
+        ctx.fill();
+        ctx.stroke();
+
+        // 몸통 & 다리 & 팔
+        ctx.beginPath();
+        ctx.moveTo(0, 1);
+        ctx.lineTo(0, 15);
+        ctx.lineTo(-6, 23);
+        ctx.moveTo(0, 15);
+        ctx.lineTo(6, 23);
+        ctx.moveTo(0, 6);
+        ctx.lineTo(Math.cos(angle) * 12, Math.sin(angle) * 12 + 6);
+        ctx.stroke();
+
+        // 3) 마법 지팡이
+        const wandX = Math.cos(angle) * 14;
+        const wandY = Math.sin(angle) * 14 + 6;
+        ctx.strokeStyle = '#6d4c41';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(wandX, wandY);
+        ctx.lineTo(wandX + Math.cos(angle) * 10, wandY + Math.sin(angle) * 10);
+        ctx.stroke();
+
+        const elemColor = CONFIG.ELEMENTS[this.getCurrentElement()].color;
+        ctx.fillStyle = elemColor;
+        ctx.beginPath();
+        ctx.arc(wandX + Math.cos(angle) * 10, wandY + Math.sin(angle) * 10, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 4) 마법사 모자
+        ctx.fillStyle = '#222';
+        ctx.beginPath();
+        ctx.ellipse(0, -11, 13, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-9, -11);
+        ctx.lineTo(0, -28);
+        ctx.lineTo(9, -11);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+
+        // 5) HP바
+        this.drawHPBar();
+    }
+
+    drawHPBar() {
+        const barWidth = 70;
+        const barHeight = 8;
+        const barX = this.x - barWidth / 2;
+        const barY = this.y - 42;
+
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`HP ${Math.max(0, Math.ceil(this.hp))}/${this.maxHp}`, this.x, barY - 3);
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+        ctx.fillStyle = '#444';
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+
+        const hpPercent = Math.max(0, this.hp / this.maxHp);
+        ctx.fillStyle = hpPercent > 0.3 ? '#4caf50' : '#f44336';
+        ctx.fillRect(barX, barY, barWidth * hpPercent, barHeight);
+    }
+}
+
+// 2. 몬스터 클래스 (슬라임)
+class Monster {
+    constructor(x, y, isBoss = false) {
+        this.x = x;
+        this.y = y;
+        this.isBoss = isBoss;
+
+        this.radius = isBoss ? CONFIG.BOSS_RADIUS : CONFIG.MONSTER_RADIUS;
+        this.maxHp = isBoss ? CONFIG.BOSS_HP : CONFIG.MONSTER_HP;
+        this.hp = this.maxHp;
+        this.speed = isBoss ? CONFIG.BOSS_SPEED : CONFIG.MONSTER_SPEED;
+        this.damage = isBoss ? CONFIG.BOSS_DAMAGE : CONFIG.MONSTER_DAMAGE;
+
+        const elemKeys = ['FIRE', 'WATER', 'LIGHTNING'];
+        this.element = elemKeys[Math.floor(Math.random() * elemKeys.length)];
+
+        this.hitTimer = 0;
+    }
+
+    update() {
+        if (!player) return;
+        if (this.hitTimer > 0) this.hitTimer--;
+
+        const dx = player.x - this.x;
+        const dy = player.y - this.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist > 5) {
+            this.x += (dx / dist) * this.speed;
+            this.y += (dy / dist) * this.speed;
+        }
+
+        if (dist < this.radius + player.radius) {
+            if (player.invulnerableTimer === 0) {
+                player.hp -= this.damage;
+                player.invulnerableTimer = 40;
+                createHitParticles(player.x, player.y, '#ff0000');
+                if (player.hp <= 0) {
+                    gameState = 'GAMEOVER';
+                    showResultScreen(false);
+                }
+            }
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        // 그림자
+        ctx.beginPath();
+        ctx.ellipse(0, this.radius * 0.7, this.radius * 0.9, this.radius * 0.3, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fill();
+
+        // 슬라임 몸통
+        ctx.fillStyle = this.hitTimer > 0 ? '#ffffff' : (this.isBoss ? '#8e24aa' : '#b0bec5');
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#424242';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // 눈
+        ctx.fillStyle = '#000';
+        const eyeOffset = this.radius * 0.3;
+        ctx.beginPath();
+        ctx.arc(-eyeOffset, -this.radius * 0.2, this.radius * 0.15, 0, Math.PI * 2);
+        ctx.arc(eyeOffset, -this.radius * 0.2, this.radius * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 입
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius * 0.25, 0, Math.PI);
+        ctx.stroke();
+
+        // 속성 이모지
+        ctx.font = `${Math.floor(this.radius * 0.7)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(CONFIG.ELEMENTS[this.element].emoji, 0, -this.radius - 8);
+
+        ctx.restore();
+
+        this.drawHPBar();
+    }
+
+    drawHPBar() {
+        const barWidth = this.radius * 2;
+        const barHeight = 6;
+        const barX = this.x - barWidth / 2;
+        const barY = this.y - this.radius - 22;
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+        ctx.fillStyle = this.isBoss ? '#e91e63' : '#ff5722';
+        ctx.fillRect(barX, barY, barWidth * (Math.max(0, this.hp) / this.maxHp), barHeight);
+    }
+}
+
+// 3. 발사체 클래스
+class Projectile {
+    constructor(x, y, angle, element, damage, isSpecial) {
+        this.x = x;
+        this.y = y;
+        this.vx = Math.cos(angle) * CONFIG.PROJECTILE_SPEED * (isSpecial ? 1.2 : 1.0);
+        this.vy = Math.sin(angle) * CONFIG.PROJECTILE_SPEED * (isSpecial ? 1.2 : 1.0);
+        this.element = element;
+        this.damage = damage;
+        this.radius = isSpecial ? 10 : 6;
+        this.life = 120;
+        this.isSpecial = isSpecial;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life--;
+
+        if (this.x < 35 || this.x > canvas.width - 35 || this.y < 35 || this.y > canvas.height - 35) {
+            this.life = 0;
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.fillStyle = CONFIG.ELEMENTS[this.element].color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = CONFIG.ELEMENTS[this.element].color;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+
+// 4. 마법서 클래스
+class MagicBook {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = 20;
+        this.floatOffset = 0;
+    }
+
+    update() {
+        if (!player) return;
+        this.floatOffset += 0.05;
+        const dist = Math.hypot(player.x - this.x, player.y - (this.y + Math.sin(this.floatOffset) * 5));
+        if (dist < this.radius + player.radius) {
+            player.damageMultiplier += 0.4;
+            magicBookPicked = true;
+            createHitParticles(this.x, this.y, '#ffd700');
+            roomCleared = true;
+            magicBook = null;
+        }
+    }
+
+    draw() {
+        const floatY = this.y + Math.sin(this.floatOffset) * 6;
+        ctx.save();
+        ctx.translate(this.x, floatY);
+
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#ffd700';
+
+        ctx.font = '32px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('📖', 0, 0);
+
+        ctx.restore();
+
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('마법서 (공격력 +40% 증가)', this.x, floatY + 28);
+    }
+}
+
+// 5. 문 클래스
+class Door {
+    constructor(position) {
+        this.position = position;
+        this.isOpen = false;
+        this.width = 70;
+        this.height = 20;
+
+        if (position === 'TOP') {
+            this.x = canvas.width / 2;
+            this.y = 25;
+            this.width = 80;
+            this.height = 20;
+        } else if (position === 'RIGHT') {
+            this.x = canvas.width - 25;
+            this.y = canvas.height / 2;
+            this.width = 20;
+            this.height = 80;
+        }
+    }
+
+    checkCollision() {
+        if (!this.isOpen || !player) return;
+
+        const dist = Math.hypot(player.x - this.x, player.y - this.y);
+        if (dist < 40) {
+            nextRoom();
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        ctx.fillStyle = this.isOpen ? '#4e342e' : '#8d6e63';
+        ctx.strokeStyle = '#2c1d11';
+        ctx.lineWidth = 3;
+
+        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+        ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+
+        if (this.isOpen) {
+            ctx.fillStyle = '#fff59d';
+            ctx.fillRect(-this.width / 3, -this.height / 3, this.width * 0.66, this.height * 0.66);
+        }
+
+        ctx.restore();
+    }
+}
+
+// 6. 파티클
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 5;
+        this.vy = (Math.random() - 0.5) * 5;
+        this.color = color;
+        this.life = 20;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life--;
+    }
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, 3, 3);
+    }
+}
+
+function createHitParticles(x, y, color) {
+    for (let i = 0; i < 8; i++) {
+        particles.push(new Particle(x, y, color));
+    }
+}
+
+function createDashParticles(x, y) {
+    for (let i = 0; i < 5; i++) {
+        particles.push(new Particle(x, y, '#ffffff'));
+    }
+}
+
+// =============================================================================
+// 방 관리 및 스테이지 로직
+// =============================================================================
+
+function setupRoom(roomIdx) {
+    currentRoomIndex = roomIdx;
+    monsters = [];
+    projectiles = [];
+    magicBook = null;
+    roomCleared = false;
+
+    if (!player) {
+        player = new Player(canvas.width / 2, canvas.height - 100);
+    } else {
+        player.x = canvas.width / 2;
+        player.y = canvas.height - 100;
+    }
+
+    doors = [
+        new Door('TOP'),
+        new Door('RIGHT')
+    ];
+
+    if (roomIdx === CONFIG.MAGIC_BOOK_ROOM_INDEX) {
+        magicBook = new MagicBook(canvas.width / 2, canvas.height / 2);
+    } else if (roomIdx === 6) {
+        monsters.push(new Monster(canvas.width / 2, canvas.height / 3, true));
+    } else {
+        for (let i = 0; i < CONFIG.MONSTER_COUNT_PER_ROOM; i++) {
+            const rx = 120 + Math.random() * (canvas.width - 240);
+            const ry = 100 + Math.random() * (canvas.height - 280);
+            monsters.push(new Monster(rx, ry, false));
+        }
+    }
+}
+
+function nextRoom() {
+    if (currentRoomIndex >= 6) {
+        gameState = 'CLEAR';
+        showResultScreen(true);
+        return;
+    }
+    setupRoom(currentRoomIndex + 1);
+}
+
+// =============================================================================
+// HUD / UI 그리기 (라운드 레그 호환 적용)
+// =============================================================================
+
+function drawHUD() {
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    const roomName = currentRoomIndex === 6 ? "보스 방" : (currentRoomIndex === CONFIG.MAGIC_BOOK_ROOM_INDEX ? "마법서의 방" : `방 ${currentRoomIndex} / 5`);
+    ctx.fillText(`[ 스테이지 1 - ${roomName} ]`, canvas.width / 2, 25);
+
+    const startX = 35;
+    const startY = 20;
+
+    ctx.save();
+
+    // 메인 UI 프레임 배경
+    ctx.fillStyle = 'rgba(80, 80, 80, 0.85)';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    drawRoundedRect(ctx, startX, startY, 230, 60, 8, true, true);
+
+    // 화살표
+    ctx.fillStyle = '#ccc';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('←', startX + 15, startY + 35);
+    ctx.fillText('→', startX + 215, startY + 35);
+
+    // Q, E 힌트
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText('E', startX + 55, startY + 82);
+    ctx.fillText('Q', startX + 175, startY + 82);
+
+    const elements = ['FIRE', 'WATER', 'LIGHTNING'];
+    elements.forEach((elemKey, idx) => {
+        const boxX = startX + 32 + idx * 56;
+        const boxY = startY + 8;
+        const isSelected = player ? (idx === player.currentElementIdx) : (idx === 1);
+
+        const size = isSelected ? 44 : 36;
+        const offsetY = isSelected ? -4 : 0;
+
+        ctx.fillStyle = isSelected ? '#78909c' : '#455a64';
+        ctx.strokeStyle = isSelected ? '#ffffff' : '#263238';
+        ctx.lineWidth = isSelected ? 3 : 1;
+
+        drawRoundedRect(ctx, boxX, boxY + offsetY, size, size, 6, true, true);
+
+        ctx.font = isSelected ? '24px serif' : '18px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(CONFIG.ELEMENTS[elemKey].emoji, boxX + size / 2, boxY + offsetY + size / 2);
+    });
+
+    ctx.restore();
+
+    // 우측 하단 별 장식
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = '24px serif';
+    ctx.fillText('✨', canvas.width - 50, canvas.height - 40);
+    ctx.restore();
+}
+
+function drawRoomEnvironment() {
+    ctx.fillStyle = '#424242';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#e3d2ab';
+    ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.03)';
+    ctx.lineWidth = 1;
+    for (let i = 40; i < canvas.width - 40; i += 60) {
+        ctx.beginPath();
+        ctx.moveTo(i, 20);
+        ctx.lineTo(i, canvas.height - 20);
+        ctx.stroke();
+    }
+}
+
+// =============================================================================
+// 메인 루프
+// =============================================================================
+
+function update() {
+    if (gameState !== 'PLAYING') return;
+
+    if (player) player.update();
+
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        const p = projectiles[i];
+        p.update();
+
+        for (let j = monsters.length - 1; j >= 0; j--) {
+            const m = monsters[j];
+            const dist = Math.hypot(p.x - m.x, p.y - m.y);
+
+            if (dist < p.radius + m.radius) {
+                let damageCalc = p.damage;
+                const pElem = CONFIG.ELEMENTS[p.element];
+
+                if (pElem.strongTo === m.element) {
+                    damageCalc *= 2.0;
+                } else if (pElem.weakTo === m.element) {
+                    damageCalc *= 0.5;
+                }
+
+                m.hp -= damageCalc;
+                m.hitTimer = 5;
+                createHitParticles(p.x, p.y, CONFIG.ELEMENTS[p.element].color);
+
+                p.life = 0;
+
+                if (m.hp <= 0) {
+                    monsters.splice(j, 1);
+                }
+                break;
+            }
+        }
+
+        if (p.life <= 0) {
+            projectiles.splice(i, 1);
+        }
+    }
+
+    monsters.forEach(m => m.update());
+
+    if (magicBook) {
+        magicBook.update();
+    }
+
+    if (monsters.length === 0 && !magicBook) {
+        roomCleared = true;
+    }
+
+    doors.forEach(d => {
+        d.isOpen = roomCleared;
+        d.checkCollision();
+    });
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        if (particles[i].life <= 0) particles.splice(i, 1);
+    }
+}
+
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawRoomEnvironment();
+    doors.forEach(d => d.draw());
+
+    if (magicBook) magicBook.draw();
+
+    particles.forEach(p => p.draw());
+    projectiles.forEach(p => p.draw());
+    monsters.forEach(m => m.draw());
+
+    if (player) player.draw();
+
+    drawHUD();
+}
+
+function gameLoop() {
+    update();
+    render();
+    requestAnimationFrame(gameLoop);
+}
+
+// =============================================================================
+// 키보드 & 마우스 이벤트 리스너
+// =============================================================================
+
+window.addEventListener('keydown', (e) => {
+    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        e.preventDefault();
+    }
+
+    keys[e.key] = true;
+
+    if (gameState === 'PLAYING' && player) {
+        if (e.code === 'Space') {
+            player.dash();
+        }
+        if (e.key === 'e' || e.key === 'E' || e.key === 'ㄷ') {
+            player.switchElement(1);
+        }
+        if (e.key === 'q' || e.key === 'Q' || e.key === 'ㅂ') {
+            player.switchElement(-1);
+        }
+    }
+});
+
+window.addEventListener('keyup', (e) => {
+    keys[e.key] = false;
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+});
+
+canvas.addEventListener('mousedown', (e) => {
+    if (gameState !== 'PLAYING') return;
+    if (e.button === 0) mouse.leftDown = true;
+    if (e.button === 2) mouse.rightDown = true;
+});
+
+canvas.addEventListener('mouseup', (e) => {
+    if (e.button === 0) mouse.leftDown = false;
+    if (e.button === 2) mouse.rightDown = false;
+});
+
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+canvas.addEventListener('wheel', (e) => {
+    if (gameState !== 'PLAYING' || !player) return;
+    if (e.deltaY > 0) player.switchElement(1);
+    else player.switchElement(-1);
+});
+
+// =============================================================================
+// 시작 및 결과 화면 제어
+// =============================================================================
+
+const startScreen = document.getElementById('start-screen');
+const resultScreen = document.getElementById('result-screen');
+const startBtn = document.getElementById('start-btn');
+const restartBtn = document.getElementById('restart-btn');
+const resultTitle = document.getElementById('result-title');
+const resultInfo = document.getElementById('result-info');
+const tipBanner = document.getElementById('tip-banner');
+
+function startGame() {
+    player = new Player(canvas.width / 2, canvas.height - 100);
+    setupRoom(1);
+
+    gameState = 'PLAYING';
+    startScreen.classList.add('hidden');
+    resultScreen.classList.add('hidden');
+    tipBanner.classList.remove('hidden');
+
+    canvas.focus();
+}
+
+function showResultScreen(isClear) {
+    tipBanner.classList.add('hidden');
+    resultScreen.classList.remove('hidden');
+
+    if (isClear) {
+        resultTitle.textContent = "🎉 STAGE 1 CLEAR! 🎉";
+        resultTitle.className = "clear-title";
+        resultInfo.innerHTML = "보스 몬스터를 물리쳤습니다!<br>스테이지 1을 성공적으로 클리어했습니다.";
+    } else {
+        resultTitle.textContent = "GAME OVER";
+        resultTitle.className = "";
+        resultInfo.innerHTML = "체력이 모두 소진되었습니다...<br>다시 도전하여 6번째 방의 보스를 물리쳐보세요!";
+    }
+}
+
+startBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', startGame);
+
+window.onload = () => {
+    window.focus();
+    setupRoom(1);
+    gameLoop();
+};
+</script>
+<!-- ... existing code -->
