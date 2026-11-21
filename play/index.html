@@ -38,7 +38,7 @@
   .overlay {
     position: absolute;
     inset: 0;
-    background: rgba(24, 26, 32, 0.9);
+    background: rgba(24, 26, 32, 0.92);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -64,18 +64,18 @@
   }
   .element-select {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     margin-bottom: 22px;
   }
   .el-btn {
     background: #2c303a;
     border: 3px solid #4e5463;
     border-radius: 12px;
-    padding: 12px 18px;
+    padding: 12px 14px;
     color: #fff;
     cursor: pointer;
     transition: 0.15s;
-    min-width: 126px;
+    min-width: 136px;
   }
   .el-btn:hover {
     transform: translateY(-3px);
@@ -95,9 +95,10 @@
     font-size: 16px;
   }
   .el-desc {
-    font-size: 12px;
+    font-size: 11px;
     color: #b8bec9;
-    margin-top: 3px;
+    margin-top: 4px;
+    line-height: 1.4;
   }
   .controls-box {
     background: rgba(255, 255, 255, 0.08);
@@ -106,7 +107,7 @@
     padding: 14px 24px;
     margin-bottom: 22px;
     font-size: 14px;
-    line-height: 1.75;
+    line-height: 1.8;
     text-align: left;
   }
   .key-badge {
@@ -158,37 +159,37 @@
       <button class="el-btn selected" data-el="water">
         <span class="el-icon">💧</span>
         <span class="el-name">물 마법</span>
-        <span class="el-desc">불에 강함 / 번개에 약함</span>
+        <span class="el-desc">좌: 물방울 / 우: 1초 감옥<br>5초 젖음 효과 부여</span>
       </button>
       <button class="el-btn" data-el="fire">
         <span class="el-icon">🔥</span>
         <span class="el-name">불 마법</span>
-        <span class="el-desc">풀에 강함 / 물에 약함</span>
+        <span class="el-desc">좌: 홀드 연사 / 우: 파이어볼<br>화상(10%×5초, 3중첩)</span>
       </button>
       <button class="el-btn" data-el="lightning">
         <span class="el-icon">⚡</span>
-        <span class="el-name">번개 마법</span>
-        <span class="el-desc">물·바위에 강함 / 풀에 약함</span>
+        <span class="el-name">전기 마법</span>
+        <span class="el-desc">좌: 연쇄 번개 / 우: 천둥 범위<br>젖은 적 +50% 추가 피해</span>
       </button>
       <button class="el-btn" data-el="grass">
         <span class="el-icon">🌿</span>
         <span class="el-name">풀 마법</span>
-        <span class="el-desc">번개·바위에 강함 / 불에 약함</span>
+        <span class="el-desc">좌: 1초 덩굴 / 우: 식인 식물<br>젖음 흡수 시 지속 +1초</span>
       </button>
       <button class="el-btn" data-el="rock">
         <span class="el-icon">🪨</span>
         <span class="el-name">바위 마법</span>
-        <span class="el-desc">불에 강함 / 물·풀에 약함</span>
+        <span class="el-desc">좌: 구르는 바위 / 우: 3초 차징<br>명중 시 화상 효과 삭제</span>
       </button>
     </div>
 
     <div class="controls-box">
       <div><span class="key-badge">W A S D</span> 이동 &nbsp;|&nbsp; <span class="key-badge">Space</span> 무적 대쉬</div>
-      <div><span class="key-badge">마우스 좌클릭</span> 기본 마법 발사 &nbsp;|&nbsp; <span class="key-badge">마우스 우클릭</span> 속성 특수 스킬</div>
+      <div><span class="key-badge">마우스 좌클릭</span> 기본 마법 (불: 홀드 연사) &nbsp;|&nbsp; <span class="key-badge">마우스 우클릭</span> 속성 특수 스킬 (바위: 홀드 차징)</div>
       <div><span class="key-badge">E</span> / <span class="key-badge">Q</span> 마법서 방에서 배운 속성 마법 전환</div>
     </div>
 
-    <button class="action-btn" id="start-btn">게임 시작</button>
+    <button class="action-btn" id="start-btn">게임 시작 (Enter)</button>
   </div>
 
   <!-- 게임오버 / 결과 화면 -->
@@ -196,16 +197,16 @@
     <h1 id="end-title">💀 쓰러졌습니다...</h1>
     <p class="subtitle" id="end-subtitle">마법사의 체력이 모두 소진되었습니다.</p>
     <div class="result-stats" id="result-stats"></div>
-    <button class="action-btn" id="restart-btn">다시 하기</button>
+    <button class="action-btn" id="restart-btn">다시 하기 (Enter)</button>
   </div>
 </div>
 
 <script>
 // ============================================================================
-// [설정값] 처음 하는 사람도 즐길 수 있게 정한 밸런스 숫자 모음
+// [설정값] 밸런스 및 스킬 수치 모음
 // ============================================================================
 const CONFIG = {
-  // 화면 및 방 크기 설정
+  // 화면 및 방 크기
   CANVAS_WIDTH: 960,
   CANVAS_HEIGHT: 600,
   WALL_THICKNESS: 42,
@@ -219,40 +220,109 @@ const CONFIG = {
   DASH_COOLDOWN: 1.15,
   INVULN_AFTER_HIT: 0.65,
 
-  // 공격 및 상성 설정
-  PRIMARY_COOLDOWN: 0.28,
-  PRIMARY_SPEED: 520,
-  PRIMARY_DAMAGE: 20,
-  SKILL_COOLDOWN: 2.0,
-  SKILL_BASE_DAMAGE: 36,
-  WEAKNESS_MULTIPLIER: 1.5, // 약점 공격 배율
-  RESIST_MULTIPLIER: 0.5,   // 내성 공격 배율
+  // 기본 상성 배율
+  WEAKNESS_MULTIPLIER: 1.5,
+  RESIST_MULTIPLIER: 0.5,
+
+  // 불 마법 설정
+  FIRE_HOLD_COOLDOWN: 0.14,     // 좌클릭 홀드 연사 간격
+  FIRE_BOLT_SPEED: 540,
+  FIRE_BOLT_DAMAGE: 13,
+  FIRE_BALL_COOLDOWN: 2.2,      // 우클릭 파이어볼 쿨타임
+  FIRE_BALL_SPEED: 430,
+  FIRE_BALL_DAMAGE: 38,
+  FIRE_BALL_AOE_RADIUS: 68,
+  BURN_DURATION: 5.0,           // 화상 5초 지속
+  BURN_DAMAGE_RATIO: 0.10,      // 마지막 입힌 데미지의 10%
+  BURN_MAX_STACKS: 3,           // 최대 3중첩
+
+  // 물 마법 설정
+  WATER_BOLT_COOLDOWN: 0.28,
+  WATER_BOLT_SPEED: 520,
+  WATER_BOLT_DAMAGE: 18,
+  WATER_PRISON_COOLDOWN: 3.0,   // 우클릭 물방울 감옥 쿨타임 3초
+  WATER_PRISON_SPEED: 440,
+  WATER_PRISON_DAMAGE: 24,
+  WATER_PRISON_DURATION: 1.0,   // 1초 동안 가두어 띄움
+  WET_DURATION: 5.0,            // 젖음 상태 5초 유지
+
+  // 전기 마법 설정
+  LIGHTNING_BOLT_COOLDOWN: 0.30,
+  LIGHTNING_BOLT_SPEED: 620,
+  LIGHTNING_BOLT_DAMAGE: 18,
+  LIGHTNING_CHAIN_RANGE: 145,   // 연쇄 번개 탐색 반경
+  LIGHTNING_CHAIN_MAX: 3,       // 최대 연쇄 횟수
+  LIGHTNING_CHAIN_RATIO: 0.75,  // 연쇄 피해 비율
+  THUNDER_COOLDOWN: 5.0,        // 우클릭 천둥 쿨타임 5초
+  THUNDER_RADIUS: 85,           // 마우스 커서 기준 천둥 범위
+  THUNDER_DURATION: 1.5,        // 지정 구역 1.5초 지속
+  THUNDER_INTERVAL: 0.5,        // 0.5초마다 천둥 낙뢰 (0s, 0.5s, 1.0s, 1.5s 총 4회)
+  THUNDER_DAMAGE: 26,           // 낙뢰 1회당 데미지
+  WET_ELECTRIC_BONUS: 1.5,      // 젖은 적에게 50% 추가 데미지
+
+  // 풀 마법 설정
+  VINE_COOLDOWN: 0.85,          // 좌클릭 덩굴 소환 쿨타임
+  VINE_RADIUS: 46,
+  VINE_DURATION: 1.0,           // 1초 속박
+  VINE_DAMAGE: 16,
+  FLYTRAP_COOLDOWN: 3.2,        // 우클릭 식인 식물 소환 쿨타임
+  FLYTRAP_DURATION: 6.0,        // 식인 식물 기본 유지 시간
+  FLYTRAP_ATTACK_INTERVAL: 0.65,
+  FLYTRAP_BITE_DAMAGE: 18,
+  FLYTRAP_RANGE: 78,
+
+  // 바위 마법 설정
+  ROCK_ROLL_COOLDOWN: 0.42,
+  ROCK_ROLL_SPEED: 380,
+  ROCK_ROLL_DAMAGE: 22,
+  ROCK_KNOCKBACK_DIST: 34,      // 굴러가는 바위 넉백 거리
+  ROCK_CHARGE_COOLDOWN: 1.5,
+  ROCK_CHARGE_MAX_TIME: 3.0,    // 최대 3초 차징
+  ROCK_CHARGE_BASE_SPEED: 340,
+  ROCK_CHARGE_BASE_DAMAGE: 32,
+  ROCK_CHARGE_SPEED_PER_SEC: 0.50,  // 1초당 +50% 추가 속도
+  ROCK_CHARGE_DAMAGE_PER_SEC: 0.25, // 1초당 +25% 추가 데미지
 
   // 스테이지(N-M) 및 몬스터 설정
-  ROOMS_PER_SUBSTAGE: 5,    // 방 5개 클리어마다 M 1 증가, M=5면 보스 등장
-  MONSTER_COUNT_MIN: 3,     // 일반 전투 방 최소 몬스터 수
-  MONSTER_COUNT_MAX: 7,     // 일반 전투 방 최대 몬스터 수
-  MONSTER_BASE_HP: 55,
-  MONSTER_HP_PER_SUBSTAGE: 10,
-  MONSTER_HP_PER_STAGE: 25,
-  MONSTER_SPEED: 105,
-  MONSTER_DETECT_RANGE: 360,
+  ROOMS_PER_SUBSTAGE: 5,
+  SUBSTAGE_HEAL_AMOUNT: 25,     // N-M 단계 상승 시 체력 회복량
+  BOSS_STAGE_HEAL_AMOUNT: 40,   // 보스 격파 후 다음 층(N+1-1) 진입 시 체력 회복량
+  MONSTER_COUNT_MIN: 3,
+  MONSTER_COUNT_MAX: 7,
+  MONSTER_BASE_HP: 60,
+  MONSTER_HP_PER_SUBSTAGE: 12,
+  MONSTER_HP_PER_STAGE: 60,     // 스테이지 N이 1 오를 때마다 기본 체력 +60 및 배율 증가
+  MONSTER_SPEED: 100,
+  MONSTER_DETECT_RANGE: 380,
   MONSTER_CONTACT_DAMAGE: 14,
 
+  // 슬라임 3회 분열 설정
+  SLIME_MAX_SPLITS: 3,          // 최대 3번 분열 (0 -> 1 -> 2 -> 3)
+  SLIME_SPLIT_HP_RATIO: 0.52,
+  SLIME_SPLIT_SPEED_MULT: 1.15,
+
+  // 적 마법사 설정
+  WIZARD_SPAWN_CHANCE: 0.42,    // 일반 몬스터 중 적 마법사 등장 확률
+  WIZARD_PREFERRED_DIST: 230,
+  WIZARD_PRIMARY_CD: 1.85,
+  WIZARD_SKILL_CD: 4.5,
+  WIZARD_BULLET_SPEED: 290,
+  WIZARD_DAMAGE: 14,
+
   // 예티 보스 설정
-  BOSS_MAX_HP: 450,
-  BOSS_HP_PER_STAGE: 140,
+  BOSS_MAX_HP: 480,
+  BOSS_HP_PER_STAGE: 150,
   BOSS_SPEED: 88,
-  BOSS_SHOT_COOLDOWN: 1.65,
+  BOSS_SHOT_COOLDOWN: 1.75,
   BOSS_BULLET_SPEED: 250,
   BOSS_DAMAGE: 18,
 
-  // 장애물 배치 설정 (겹침 방지 여유 거리)
+  // 장애물 배치 설정
   OBSTACLE_MIN_COUNT: 4,
   OBSTACLE_MAX_COUNT: 6,
   OBSTACLE_PADDING: 34,
 
-  // N이 1 증가할 때마다 순환하는 맵 배경 테마 목록
+  // N 증가 시 배경 테마 목록
   STAGE_THEMES: [
     {
       name: '1장 · 양피지 성채',
@@ -327,7 +397,7 @@ const ELEMENTS = {
     icon: '💧',
     color: '#3b82f6',
     lightColor: '#93c5fd',
-    skillName: '관통 해일파',
+    skillName: '물방울 감옥 (3초)',
     strongAgainst: ['fire', 'rock'],
     weakAgainst: ['lightning', 'grass']
   },
@@ -337,17 +407,17 @@ const ELEMENTS = {
     icon: '🔥',
     color: '#ef4444',
     lightColor: '#fca5a5',
-    skillName: '5연발 화염 부채',
+    skillName: '파이어볼 (2.2초)',
     strongAgainst: ['grass'],
     weakAgainst: ['water', 'rock']
   },
   lightning: {
     id: 'lightning',
-    name: '번개',
+    name: '전기',
     icon: '⚡',
     color: '#eab308',
     lightColor: '#fef08a',
-    skillName: '초고속 2연발 번개창',
+    skillName: '천둥 낙뢰 (5초)',
     strongAgainst: ['water', 'rock'],
     weakAgainst: ['grass']
   },
@@ -357,7 +427,7 @@ const ELEMENTS = {
     icon: '🌿',
     color: '#22c55e',
     lightColor: '#86efac',
-    skillName: '8방향 가시폭풍',
+    skillName: '식인 식물 소환',
     strongAgainst: ['water', 'lightning', 'rock'],
     weakAgainst: ['fire']
   },
@@ -367,14 +437,13 @@ const ELEMENTS = {
     icon: '🪨',
     color: '#92400e',
     lightColor: '#d6b899',
-    skillName: '거대 룬 바위탄',
+    skillName: '차징 거대 바위 (홀드)',
     strongAgainst: ['fire'],
     weakAgainst: ['water', 'grass', 'lightning']
   }
 };
 const ELEMENT_KEYS = Object.keys(ELEMENTS);
 
-// 상성 배율 계산 함수
 function getElementMultiplier(atkEl, defEl) {
   const atk = ELEMENTS[atkEl];
   if (!atk || !defEl) return 1.0;
@@ -388,6 +457,22 @@ function getElementMultiplier(atkEl, defEl) {
 // ============================================================================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+    return this;
+  };
+}
+
 const startScreen = document.getElementById('start-screen');
 const endScreen = document.getElementById('end-screen');
 const endTitle = document.getElementById('end-title');
@@ -395,44 +480,50 @@ const endSubtitle = document.getElementById('end-subtitle');
 const resultStats = document.getElementById('result-stats');
 
 let selectedStartElement = 'water';
-let gameState = 'START'; // 'START' | 'PLAYING' | 'GAMEOVER'
+let gameState = 'START';
 let lastTime = 0;
 
-// 키보드 및 마우스 입력 상태
 const keys = {};
 const mouse = {
   x: CONFIG.CANVAS_WIDTH / 2,
   y: CONFIG.CANVAS_HEIGHT / 2,
-  leftDown: false
+  leftDown: false,
+  rightDown: false
 };
 
 // 플레이어 상태
 const player = {
   x: 480,
   y: 340,
+  radius: CONFIG.PLAYER_RADIUS,
   hp: CONFIG.PLAYER_MAX_HP,
   maxHp: CONFIG.PLAYER_MAX_HP,
   unlockedElements: ['water'],
   currentSlotIndex: 0,
   primaryTimer: 0,
   skillTimer: 0,
+  rockChargeTime: 0,       // 바위 우클릭 차징 시간 (0 ~ 3초)
+  isChargingRock: false,
   dashTimer: 0,
   dashCooldownTimer: 0,
   dashDirX: 0,
   dashDirY: -1,
   invulnTimer: 0,
+  trapTimer: 0,            // 적 마법사의 물방울/덩굴 속박 시간
+  trapType: null,          // 'bubble' | 'vine' | null
   walkAnim: 0
 };
 
 // 현재 방 및 스테이지(N-M) 상태
 const roomState = {
-  stageN: 1,               // 스테이지 N (보스 처치 시 1 증가)
-  stageM: 1,               // 서브 스테이지 M (방 5개 클리어 시 1 증가, 5면 보스전)
-  clearedInSubStage: 0,    // 현재 M에서 클리어한 일반 방 수 (0 ~ 4)
-  totalCombatCleared: 0,   // 누적 일반 방 클리어 수
-  totalKills: 0,           // 누적 처치 몬스터 수
-  bossKills: 0,            // 누적 보스 처치 수
-  type: 'COMBAT',          // 'COMBAT' | 'SPELLBOOK' | 'BOSS'
+  stageN: 1,
+  stageM: 1,
+  stageBanner: null,       // 단계 전환 시 화면 중앙에 크게 표시할 N-M 배너 { text, subText, healText, life, maxLife }
+  clearedInSubStage: 0,
+  totalCombatCleared: 0,
+  totalKills: 0,
+  bossKills: 0,
+  type: 'COMBAT',
   cleared: false,
   doors: [],
   obstacles: [],
@@ -441,13 +532,17 @@ const roomState = {
   spellbook: null,
   projectiles: [],
   enemyProjectiles: [],
+  vines: [],               // 풀 좌클릭 덩굴 장판 목록
+  flytraps: [],            // 풀 우클릭 식인 식물 소환수 목록
+  thunderZones: [],        // 전기 우클릭 지정 구역 천둥 장판 목록
+  lightningBolts: [],      // 연쇄 번개 / 천둥 이펙트 목록
   particles: [],
   floatingTexts: [],
   floorDetails: []
 };
 
 // ============================================================================
-// 시작 화면 속성 선택 및 버튼 이벤트
+// 시작 화면 속성 선택 및 입력 이벤트
 // ============================================================================
 document.querySelectorAll('.el-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -464,7 +559,6 @@ document.getElementById('restart-btn').addEventListener('click', () => {
   gameState = 'START';
 });
 
-// 브라우저 스크롤 방지 및 키보드 즉시 입력 처리
 window.addEventListener('keydown', (e) => {
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', ' '].includes(e.key)) {
     e.preventDefault();
@@ -472,13 +566,25 @@ window.addEventListener('keydown', (e) => {
   const code = e.code;
   keys[code] = true;
 
+  if (code === 'Enter' || e.key === 'Enter') {
+    if (gameState === 'START') {
+      e.preventDefault();
+      startNewGame();
+      return;
+    } else if (gameState === 'GAMEOVER') {
+      e.preventDefault();
+      endScreen.classList.add('hidden');
+      startScreen.classList.remove('hidden');
+      gameState = 'START';
+      return;
+    }
+  }
+
   if (gameState !== 'PLAYING') return;
 
-  // Space: 무적 대쉬
-  if (code === 'Space' && player.dashCooldownTimer <= 0 && player.dashTimer <= 0) {
+  if (code === 'Space' && player.dashCooldownTimer <= 0 && player.dashTimer <= 0 && player.trapTimer <= 0) {
     triggerDash();
   }
-  // E / Q: 습득한 마법 속성 전환
   if (code === 'KeyE') {
     cycleElement(-1);
   } else if (code === 'KeyQ') {
@@ -502,12 +608,28 @@ canvas.addEventListener('mousedown', (e) => {
     mouse.leftDown = true;
     tryPrimaryAttack();
   } else if (e.button === 2) {
-    trySkillAttack();
+    mouse.rightDown = true;
+    const curEl = getCurrentElement();
+    if (curEl === 'rock') {
+      if (player.skillTimer <= 0) {
+        player.isChargingRock = true;
+        player.rockChargeTime = 0;
+      }
+    } else {
+      trySkillAttack();
+    }
   }
 });
 
 window.addEventListener('mouseup', (e) => {
-  if (e.button === 0) mouse.leftDown = false;
+  if (e.button === 0) {
+    mouse.leftDown = false;
+  } else if (e.button === 2) {
+    mouse.rightDown = false;
+    if (gameState === 'PLAYING' && player.isChargingRock) {
+      releaseChargedRock();
+    }
+  }
 });
 
 canvas.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -525,9 +647,13 @@ function startNewGame() {
   player.currentSlotIndex = 0;
   player.primaryTimer = 0;
   player.skillTimer = 0;
+  player.rockChargeTime = 0;
+  player.isChargingRock = false;
   player.dashTimer = 0;
   player.dashCooldownTimer = 0;
   player.invulnTimer = 0;
+  player.trapTimer = 0;
+  player.trapType = null;
 
   roomState.stageN = 1;
   roomState.stageM = 1;
@@ -538,6 +664,7 @@ function startNewGame() {
 
   gameState = 'PLAYING';
   enterRoom('COMBAT', 'bottom');
+  showStageBanner(`${roomState.stageN}-${roomState.stageM}`, getCurrentTheme().name, 0);
 }
 
 function getCurrentElement() {
@@ -552,37 +679,36 @@ function getCurrentTheme() {
 function cycleElement(dir) {
   const len = player.unlockedElements.length;
   if (len <= 1) return;
+  if (player.isChargingRock) {
+    player.isChargingRock = false;
+    player.rockChargeTime = 0;
+  }
   player.currentSlotIndex = (player.currentSlotIndex + dir + len) % len;
   const el = ELEMENTS[getCurrentElement()];
   addFloatingText(player.x, player.y - 42, `${el.icon} ${el.name} 마법 장착!`, el.color);
 }
 
-// 문 위치 좌표 계산 (위, 왼쪽, 오른쪽)
 function getDoorRect(side) {
   const w = CONFIG.CANVAS_WIDTH;
   const h = CONFIG.CANVAS_HEIGHT;
-  if (side === 'top') return { side: 'top', x: w / 2 - 42, y: 6, w: 84, h: 42, spawnX: w / 2, spawnY: 115 };
-  if (side === 'left') return { side: 'left', x: 6, y: h / 2 - 42, w: 42, h: 84, spawnX: 115, spawnY: h / 2 };
-  return { side: 'right', x: w - 48, y: h / 2 - 42, w: 42, h: 84, spawnX: w - 115, spawnY: h / 2 };
+  if (side === 'top') return { side: 'top', x: w / 2 - 42, y: 6, w: 84, h: 42 };
+  if (side === 'left') return { side: 'left', x: 6, y: h / 2 - 42, w: 42, h: 84 };
+  return { side: 'right', x: w - 48, y: h / 2 - 42, w: 42, h: 84 };
 }
 
-// 원형 충돌 판정 유틸
 function circlesOverlap(x1, y1, r1, x2, y2, r2) {
   const dx = x1 - x2;
   const dy = y1 - y2;
   return dx * dx + dy * dy < (r1 + r2) * (r1 + r2);
 }
 
-// 안전한 빈 바닥 격자 좌표 목록 생성 (장애물·벽·플레이어와 절대 겹치지 않음)
 function buildSafeFloorGrid(extraClearRadius = 28) {
   const safePoints = [];
   const wall = CONFIG.WALL_THICKNESS;
   for (let gx = wall + 75; gx <= CONFIG.CANVAS_WIDTH - wall - 75; gx += 58) {
     for (let gy = wall + 85; gy <= CONFIG.CANVAS_HEIGHT - wall - 75; gy += 58) {
-      // 플레이어 시작 위치와 너무 가까우면 제외
       if (circlesOverlap(gx, gy, extraClearRadius, player.x, player.y, 115)) continue;
 
-      // 문 입구와 겹치면 제외
       let nearDoor = false;
       for (const side of ['top', 'left', 'right']) {
         const d = getDoorRect(side);
@@ -593,7 +719,6 @@ function buildSafeFloorGrid(extraClearRadius = 28) {
       }
       if (nearDoor) continue;
 
-      // 설치된 장애물과 겹치면 제외
       let hitObs = false;
       for (const obs of roomState.obstacles) {
         if (circlesOverlap(gx, gy, extraClearRadius, obs.x, obs.y, obs.radius + 12)) {
@@ -609,7 +734,6 @@ function buildSafeFloorGrid(extraClearRadius = 28) {
   return safePoints;
 }
 
-// 맵 곳곳에 겹치지 않는 장애물 배치
 function generateObstacles(isBossRoom) {
   roomState.obstacles = [];
   const count = isBossRoom
@@ -631,13 +755,9 @@ function generateObstacles(isBossRoom) {
     const x = wall + 95 + Math.random() * (CONFIG.CANVAS_WIDTH - (wall + 95) * 2);
     const y = wall + 105 + Math.random() * (CONFIG.CANVAS_HEIGHT - (wall + 105) * 2);
 
-    // 플레이어 초기 위치 회피
     if (circlesOverlap(x, y, radius, player.x, player.y, 110)) continue;
-    // 보스 중앙 스폰 위치 회피
     if (isBossRoom && circlesOverlap(x, y, radius, CONFIG.CANVAS_WIDTH / 2, 230, 135)) continue;
-    // 문 출입구 회피
     if (doorZones.some(dz => circlesOverlap(x, y, radius, dz.x, dz.y, dz.r))) continue;
-    // 다른 장애물과 이미지가 겹치지 않도록 여유 거리 확보
     if (roomState.obstacles.some(o => circlesOverlap(x, y, radius, o.x, o.y, o.radius + CONFIG.OBSTACLE_PADDING))) continue;
 
     roomState.obstacles.push({
@@ -649,7 +769,50 @@ function generateObstacles(isBossRoom) {
   }
 }
 
-// 새로운 방 입장 처리
+// 슬라임 또는 적 마법사 객체 생성 헬퍼
+function createMonster(kind, x, y, element, maxHp, splitGen = 0) {
+  const radius = kind === 'wizard' ? 21 : Math.max(11, 26 - splitGen * 5);
+  const baseSpeed = kind === 'wizard'
+    ? 85 + (roomState.stageN - 1) * 8
+    : (CONFIG.MONSTER_SPEED + (roomState.stageN - 1) * 10) * Math.pow(CONFIG.SLIME_SPLIT_SPEED_MULT, splitGen);
+
+  return {
+    kind,                // 'slime' | 'wizard'
+    x,
+    y,
+    radius,
+    element,
+    hp: maxHp,
+    maxHp,
+    speed: baseSpeed,
+    splitGen,            // 슬라임 분열 세대 (0: 원본, 1~3: 분열체)
+    bobPhase: Math.random() * Math.PI * 2,
+    hitFlash: 0,
+    // 상태이상 필드
+    burnStacks: 0,
+    burnTimer: 0,
+    burnTickDamage: 0,
+    burnTickTimer: 1.0,
+    wetTimer: 0,
+    trapTimer: 0,
+    trapType: null,      // 'bubble' | 'vine' | null
+    // 적 마법사 전용 AI 타이머
+    primaryTimer: 0.8 + Math.random() * 1.1,
+    skillTimer: 2.2 + Math.random() * 1.8,
+    strafeDir: Math.random() < 0.5 ? 1 : -1
+  };
+}
+
+function showStageBanner(stageText, subText, healAmount = 0) {
+  roomState.stageBanner = {
+    text: stageText,
+    subText: subText || '',
+    healText: healAmount > 0 ? `💖 체력 +${healAmount} 회복!` : '',
+    life: 2.2,
+    maxLife: 2.2
+  };
+}
+
 function enterRoom(roomType, enteredFromSide) {
   roomState.type = roomType;
   roomState.cleared = false;
@@ -658,11 +821,19 @@ function enterRoom(roomType, enteredFromSide) {
   roomState.spellbook = null;
   roomState.projectiles = [];
   roomState.enemyProjectiles = [];
+  roomState.vines = [];
+  roomState.flytraps = [];
+  roomState.thunderZones = [];
+  roomState.lightningBolts = [];
   roomState.particles = [];
   roomState.floatingTexts = [];
   roomState.obstacles = [];
 
-  // 양피지 바닥의 잔디/돌 티끌 장식 생성
+  player.trapTimer = 0;
+  player.trapType = null;
+  player.isChargingRock = false;
+  player.rockChargeTime = 0;
+
   roomState.floorDetails = [];
   for (let i = 0; i < 18; i++) {
     roomState.floorDetails.push({
@@ -672,7 +843,6 @@ function enterRoom(roomType, enteredFromSide) {
     });
   }
 
-  // 플레이어 입장 위치 설정
   if (enteredFromSide === 'top') {
     player.x = CONFIG.CANVAS_WIDTH / 2;
     player.y = CONFIG.CANVAS_HEIGHT - 105;
@@ -687,7 +857,6 @@ function enterRoom(roomType, enteredFromSide) {
     player.y = CONFIG.CANVAS_HEIGHT / 2 + 60;
   }
 
-  // 다음 이동 문(위, 왼쪽, 오른쪽) 준비
   roomState.doors = [
     { ...getDoorRect('top'), nextType: 'COMBAT', label: '⚔️ 전투 방' },
     { ...getDoorRect('left'), nextType: 'COMBAT', label: '⚔️ 전투 방' },
@@ -697,17 +866,17 @@ function enterRoom(roomType, enteredFromSide) {
   if (roomType === 'COMBAT') {
     generateObstacles(false);
 
-    // 3~7마리 몬스터 수 결정
     const mCount = Math.floor(
       Math.random() * (CONFIG.MONSTER_COUNT_MAX - CONFIG.MONSTER_COUNT_MIN + 1)
     ) + CONFIG.MONSTER_COUNT_MIN;
 
-    const maxHp = CONFIG.MONSTER_BASE_HP
-      + (roomState.stageM - 1) * CONFIG.MONSTER_HP_PER_SUBSTAGE
-      + (roomState.stageN - 1) * CONFIG.MONSTER_HP_PER_STAGE;
+    const stageNBonus = (roomState.stageN - 1) * CONFIG.MONSTER_HP_PER_STAGE;
+    const stageNScale = 1 + (roomState.stageN - 1) * 0.25;
+    const maxHp = Math.round(
+      (CONFIG.MONSTER_BASE_HP + (roomState.stageM - 1) * CONFIG.MONSTER_HP_PER_SUBSTAGE + stageNBonus) * stageNScale
+    );
 
     const safeGrid = buildSafeFloorGrid(28);
-    // 안전 좌표를 무작위로 섞음
     for (let i = safeGrid.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [safeGrid[i], safeGrid[j]] = [safeGrid[j], safeGrid[i]];
@@ -718,7 +887,6 @@ function enterRoom(roomType, enteredFromSide) {
       let my = 180;
       let placed = false;
 
-      // 1차: 무작위 빈 공간 탐색
       for (let t = 0; t < 80; t++) {
         const tx = 110 + Math.random() * (CONFIG.CANVAS_WIDTH - 220);
         const ty = 110 + Math.random() * (CONFIG.CANVAS_HEIGHT - 220);
@@ -731,7 +899,6 @@ function enterRoom(roomType, enteredFromSide) {
         break;
       }
 
-      // 2차 폴백: 사전 검증된 안전 격자 좌표에서 100% 보장 스폰
       if (!placed && safeGrid.length > 0) {
         const spot = safeGrid[i % safeGrid.length];
         mx = spot.x;
@@ -739,17 +906,9 @@ function enterRoom(roomType, enteredFromSide) {
       }
 
       const el = ELEMENT_KEYS[Math.floor(Math.random() * ELEMENT_KEYS.length)];
-      roomState.monsters.push({
-        x: mx,
-        y: my,
-        radius: 26,
-        element: el,
-        hp: maxHp,
-        maxHp: maxHp,
-        speed: CONFIG.MONSTER_SPEED + (roomState.stageN - 1) * 10,
-        bobPhase: Math.random() * Math.PI * 2,
-        hitFlash: 0
-      });
+      // 최소 1마리는 슬라임, 나머지는 슬라임 또는 원소 마법사 혼합 스폰
+      const kind = (i === 0 || Math.random() >= CONFIG.WIZARD_SPAWN_CHANCE) ? 'slime' : 'wizard';
+      roomState.monsters.push(createMonster(kind, mx, my, el, maxHp, 0));
     }
 
     addFloatingText(
@@ -759,7 +918,6 @@ function enterRoom(roomType, enteredFromSide) {
       '#1e293b'
     );
   } else if (roomType === 'SPELLBOOK') {
-    // 마법서 방에는 몬스터가 나오지 않으며, 보물상자와 마법서 배치
     roomState.cleared = true;
     const unlearned = ELEMENT_KEYS.filter(k => !player.unlockedElements.includes(k));
     const rewardEl = unlearned.length > 0
@@ -767,21 +925,22 @@ function enterRoom(roomType, enteredFromSide) {
       : ELEMENT_KEYS[Math.floor(Math.random() * ELEMENT_KEYS.length)];
 
     roomState.spellbook = {
-      x: 730,
-      y: 410,
-      chestX: 745,
-      chestY: 225,
+      chestX: CONFIG.CANVAS_WIDTH / 2,
+      chestY: CONFIG.CANVAS_HEIGHT / 2 - 45,
+      x: CONFIG.CANVAS_WIDTH / 2,
+      y: CONFIG.CANVAS_HEIGHT / 2 - 45,
       element: rewardEl,
+      chestOpened: false,
+      openAnim: 0,
       collected: false
     };
 
-    // 마법서 방 이후 문은 모두 전투 방으로 개방
     roomState.doors.forEach(d => {
       d.nextType = 'COMBAT';
       d.label = '⚔️ 전투 방';
     });
 
-    addFloatingText(CONFIG.CANVAS_WIDTH / 2, 115, '📖 고대의 마법서 방 (안전 구역)', '#6d28d9');
+    addFloatingText(CONFIG.CANVAS_WIDTH / 2, 115, '📦 고대의 보물상자 방 (상자에 다가가 열어보세요!)', '#6d28d9');
   } else if (roomType === 'BOSS') {
     generateObstacles(true);
     const bossMaxHp = CONFIG.BOSS_MAX_HP + (roomState.stageN - 1) * CONFIG.BOSS_HP_PER_STAGE;
@@ -796,7 +955,14 @@ function enterRoom(roomType, enteredFromSide) {
       shotTimer: 1.2,
       elementShiftTimer: 6.0,
       walkPhase: 0,
-      hitFlash: 0
+      hitFlash: 0,
+      burnStacks: 0,
+      burnTimer: 0,
+      burnTickDamage: 0,
+      burnTickTimer: 1.0,
+      wetTimer: 0,
+      trapTimer: 0,
+      trapType: null
     };
     addFloatingText(
       CONFIG.CANVAS_WIDTH / 2,
@@ -807,7 +973,6 @@ function enterRoom(roomType, enteredFromSide) {
   }
 }
 
-// 방 클리어 판정 및 다음 문 설정
 function onRoomCleared() {
   if (roomState.cleared) return;
   roomState.cleared = true;
@@ -816,13 +981,25 @@ function onRoomCleared() {
     roomState.totalCombatCleared += 1;
     roomState.clearedInSubStage += 1;
 
-    // 5개 방을 모두 클리어했으면 M을 1 증가시키고 다음 방을 결정
+    let stageAdvanced = false;
     if (roomState.clearedInSubStage >= CONFIG.ROOMS_PER_SUBSTAGE) {
       roomState.clearedInSubStage = 0;
       roomState.stageM += 1;
+      stageAdvanced = true;
     }
 
-    // M이 5가 되었다면 보스 방 문 개방!
+    if (stageAdvanced) {
+      const heal = CONFIG.SUBSTAGE_HEAL_AMOUNT;
+      player.hp = Math.min(player.maxHp, player.hp + heal);
+      spawnParticles(player.x, player.y, '#22c55e', 18);
+      addFloatingText(player.x, player.y - 38, `💖 단계 상승! HP +${heal}`, '#16a34a');
+      showStageBanner(
+        `${roomState.stageN}-${roomState.stageM}`,
+        roomState.stageM >= 5 ? '👑 보스 결전 단계!' : getCurrentTheme().name,
+        heal
+      );
+    }
+
     if (roomState.stageM >= 5) {
       roomState.doors.forEach(d => {
         d.nextType = 'BOSS';
@@ -832,8 +1009,7 @@ function onRoomCleared() {
       return;
     }
 
-    // 1~3번째 방을 깰 때마다 위·왼쪽·오른쪽 문 중 랜덤한 한 곳에 마법서 방 문 등장
-    const currentRoomInSub = roomState.clearedInSubStage; // 1, 2, 3, 4
+    const currentRoomInSub = roomState.clearedInSubStage;
     roomState.doors.forEach(d => {
       d.nextType = 'COMBAT';
       d.label = '⚔️ 전투 방';
@@ -845,16 +1021,17 @@ function onRoomCleared() {
       roomState.doors[randomIdx].label = '📖 마법서 방';
     }
 
-    addFloatingText(CONFIG.CANVAS_WIDTH / 2, 140, '✨ 방 클리어! 문이 열렸습니다!', '#15803d');
+    if (!stageAdvanced) {
+      addFloatingText(CONFIG.CANVAS_WIDTH / 2, 140, '✨ 방 클리어! 문이 열렸습니다!', '#15803d');
+    }
   } else if (roomState.type === 'BOSS') {
-    // 보스 처치 시 N은 1 증가하고 M은 1로 초기화!
     roomState.bossKills += 1;
     roomState.stageN += 1;
     roomState.stageM = 1;
     roomState.clearedInSubStage = 0;
-
-    // 보스 격파 보상으로 체력 30 회복
-    player.hp = Math.min(player.maxHp, player.hp + 30);
+    const heal = CONFIG.BOSS_STAGE_HEAL_AMOUNT;
+    player.hp = Math.min(player.maxHp, player.hp + heal);
+    spawnParticles(player.x, player.y, '#22c55e', 24);
 
     roomState.doors.forEach(d => {
       d.nextType = 'COMBAT';
@@ -862,17 +1039,18 @@ function onRoomCleared() {
     });
 
     const nextTheme = getCurrentTheme();
+    showStageBanner(`${roomState.stageN}-${roomState.stageM}`, nextTheme.name, heal);
     addFloatingText(
       CONFIG.CANVAS_WIDTH / 2,
       145,
-      `🎉 보스 격파! ${roomState.stageN}-1 (${nextTheme.name}) 문 개방! (+HP 30)`,
+      `🎉 보스 격파! ${roomState.stageN}-1 (${nextTheme.name}) 문 개방! (+HP ${heal})`,
       '#b45309'
     );
   }
 }
 
 // ============================================================================
-// 플레이어 대쉬 및 마법 공격
+// 플레이어 대쉬 및 5대 원소 공격 / 스킬
 // ============================================================================
 function triggerDash() {
   let dx = 0;
@@ -899,119 +1077,491 @@ function triggerDash() {
   spawnParticles(player.x, player.y, '#ffffff', 10);
 }
 
+// 마우스 좌클릭 기본 공격
 function tryPrimaryAttack() {
   if (player.primaryTimer > 0) return;
-  player.primaryTimer = CONFIG.PRIMARY_COOLDOWN;
 
   const el = getCurrentElement();
   const angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
 
-  roomState.projectiles.push({
-    x: player.x + Math.cos(angle) * 22,
-    y: player.y + Math.sin(angle) * 22,
-    vx: Math.cos(angle) * CONFIG.PRIMARY_SPEED,
-    vy: Math.sin(angle) * CONFIG.PRIMARY_SPEED,
-    radius: 8,
-    damage: CONFIG.PRIMARY_DAMAGE,
-    element: el,
-    pierce: false,
-    life: 1.6
-  });
-}
-
-function trySkillAttack() {
-  if (player.skillTimer > 0) return;
-  player.skillTimer = CONFIG.SKILL_COOLDOWN;
-
-  const el = getCurrentElement();
-  const baseAngle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
-
-  if (el === 'water') {
-    // 물 스킬: 관통 대형 해일탄
+  if (el === 'fire') {
+    // 불 좌클릭: 홀드 연사 불꽃탄
+    player.primaryTimer = CONFIG.FIRE_HOLD_COOLDOWN;
     roomState.projectiles.push({
-      x: player.x + Math.cos(baseAngle) * 26,
-      y: player.y + Math.sin(baseAngle) * 26,
-      vx: Math.cos(baseAngle) * 440,
-      vy: Math.sin(baseAngle) * 440,
-      radius: 18,
-      damage: CONFIG.SKILL_BASE_DAMAGE,
-      element: 'water',
-      pierce: true,
-      hitIds: new Set(),
-      life: 1.8
+      x: player.x + Math.cos(angle) * 22,
+      y: player.y + Math.sin(angle) * 22,
+      vx: Math.cos(angle) * CONFIG.FIRE_BOLT_SPEED,
+      vy: Math.sin(angle) * CONFIG.FIRE_BOLT_SPEED,
+      radius: 7,
+      damage: CONFIG.FIRE_BOLT_DAMAGE,
+      element: 'fire',
+      kind: 'fire_bolt',
+      life: 1.4
     });
-  } else if (el === 'fire') {
-    // 불 스킬: 5발 부채꼴 화염탄
-    for (let i = -2; i <= 2; i++) {
-      const a = baseAngle + i * 0.16;
-      roomState.projectiles.push({
-        x: player.x + Math.cos(a) * 24,
-        y: player.y + Math.sin(a) * 24,
-        vx: Math.cos(a) * 480,
-        vy: Math.sin(a) * 480,
-        radius: 10,
-        damage: Math.round(CONFIG.SKILL_BASE_DAMAGE * 0.65),
-        element: 'fire',
-        pierce: false,
-        life: 1.3
-      });
-    }
-  } else if (el === 'lightning') {
-    // 번개 스킬: 초고속 2연발 번개창
-    for (let i = 0; i < 2; i++) {
-      const offset = (i === 0 ? -1 : 1) * 10;
-      const perp = baseAngle + Math.PI / 2;
-      roomState.projectiles.push({
-        x: player.x + Math.cos(perp) * offset,
-        y: player.y + Math.sin(perp) * offset,
-        vx: Math.cos(baseAngle) * 760,
-        vy: Math.sin(baseAngle) * 760,
-        radius: 9,
-        damage: Math.round(CONFIG.SKILL_BASE_DAMAGE * 0.85),
-        element: 'lightning',
-        pierce: true,
-        hitIds: new Set(),
-        life: 1.1
-      });
-    }
-  } else if (el === 'grass') {
-    // 풀 스킬: 전방위 8방향 가시폭풍
-    for (let i = 0; i < 8; i++) {
-      const a = baseAngle + (Math.PI * 2 * i) / 8;
-      roomState.projectiles.push({
-        x: player.x + Math.cos(a) * 24,
-        y: player.y + Math.sin(a) * 24,
-        vx: Math.cos(a) * 430,
-        vy: Math.sin(a) * 430,
-        radius: 10,
-        damage: Math.round(CONFIG.SKILL_BASE_DAMAGE * 0.75),
-        element: 'grass',
-        pierce: false,
-        life: 1.2
-      });
-    }
-  } else if (el === 'rock') {
-    // 바위 스킬: 거대 룬 바위탄
+  } else if (el === 'water') {
+    // 물 좌클릭: 물방울 발사
+    player.primaryTimer = CONFIG.WATER_BOLT_COOLDOWN;
     roomState.projectiles.push({
-      x: player.x + Math.cos(baseAngle) * 28,
-      y: player.y + Math.sin(baseAngle) * 28,
-      vx: Math.cos(baseAngle) * 360,
-      vy: Math.sin(baseAngle) * 360,
-      radius: 22,
-      damage: Math.round(CONFIG.SKILL_BASE_DAMAGE * 1.45),
+      x: player.x + Math.cos(angle) * 22,
+      y: player.y + Math.sin(angle) * 22,
+      vx: Math.cos(angle) * CONFIG.WATER_BOLT_SPEED,
+      vy: Math.sin(angle) * CONFIG.WATER_BOLT_SPEED,
+      radius: 9,
+      damage: CONFIG.WATER_BOLT_DAMAGE,
+      element: 'water',
+      kind: 'water_bolt',
+      life: 1.6
+    });
+  } else if (el === 'lightning') {
+    // 전기 좌클릭: 적중 시 주변 연쇄 번개를 일으키는 일렉트릭 볼
+    player.primaryTimer = CONFIG.LIGHTNING_BOLT_COOLDOWN;
+    roomState.projectiles.push({
+      x: player.x + Math.cos(angle) * 22,
+      y: player.y + Math.sin(angle) * 22,
+      vx: Math.cos(angle) * CONFIG.LIGHTNING_BOLT_SPEED,
+      vy: Math.sin(angle) * CONFIG.LIGHTNING_BOLT_SPEED,
+      radius: 8,
+      damage: CONFIG.LIGHTNING_BOLT_DAMAGE,
+      element: 'lightning',
+      kind: 'electric_bolt',
+      life: 1.5
+    });
+  } else if (el === 'grass') {
+    // 풀 좌클릭: 마우스 위치 바닥에서 적을 1초간 속박하는 덩굴 소환
+    player.primaryTimer = CONFIG.VINE_COOLDOWN;
+    const vx = Math.max(CONFIG.WALL_THICKNESS + 30, Math.min(CONFIG.CANVAS_WIDTH - CONFIG.WALL_THICKNESS - 30, mouse.x));
+    const vy = Math.max(CONFIG.WALL_THICKNESS + 30, Math.min(CONFIG.CANVAS_HEIGHT - CONFIG.WALL_THICKNESS - 30, mouse.y));
+
+    const vineObj = {
+      x: vx,
+      y: vy,
+      radius: CONFIG.VINE_RADIUS,
+      life: CONFIG.VINE_DURATION,
+      maxLife: CONFIG.VINE_DURATION,
+      hitTargets: new Set()
+    };
+    roomState.vines.push(vineObj);
+    spawnParticles(vx, vy, '#22c55e', 12);
+
+    // 소환 즉시 범위 내 적에게 1초 속박 및 피해 적용 (+ 젖음 효과 흡수 시 지속시간 +1초)
+    applyVineEffects(vineObj);
+  } else if (el === 'rock') {
+    // 바위 좌클릭: 앞으로 굴러가며 명중 시 뒤로 밀쳐내는 바위 소환
+    player.primaryTimer = CONFIG.ROCK_ROLL_COOLDOWN;
+    roomState.projectiles.push({
+      x: player.x + Math.cos(angle) * 24,
+      y: player.y + Math.sin(angle) * 24,
+      vx: Math.cos(angle) * CONFIG.ROCK_ROLL_SPEED,
+      vy: Math.sin(angle) * CONFIG.ROCK_ROLL_SPEED,
+      radius: 14,
+      damage: CONFIG.ROCK_ROLL_DAMAGE,
       element: 'rock',
-      pierce: false,
-      life: 1.8
+      kind: 'rock_roll',
+      rotation: 0,
+      hitTargets: new Set(),
+      life: 2.6
     });
   }
 }
 
-// 원형 엔티티와 장애물/벽 충돌 해결
+// 마우스 우클릭 특수 스킬 (바위 제외 즉시 발동)
+function trySkillAttack() {
+  if (player.skillTimer > 0) return;
+
+  const el = getCurrentElement();
+  const baseAngle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+
+  if (el === 'fire') {
+    // 불 우클릭: 파이어볼 발사
+    player.skillTimer = CONFIG.FIRE_BALL_COOLDOWN;
+    roomState.projectiles.push({
+      x: player.x + Math.cos(baseAngle) * 26,
+      y: player.y + Math.sin(baseAngle) * 26,
+      vx: Math.cos(baseAngle) * CONFIG.FIRE_BALL_SPEED,
+      vy: Math.sin(baseAngle) * CONFIG.FIRE_BALL_SPEED,
+      radius: 16,
+      damage: CONFIG.FIRE_BALL_DAMAGE,
+      element: 'fire',
+      kind: 'fireball',
+      life: 1.7
+    });
+  } else if (el === 'water') {
+    // 물 우클릭: 쿨타임 3초, 맞으면 1초 동안 물방울에 가두어 띄움
+    player.skillTimer = CONFIG.WATER_PRISON_COOLDOWN;
+    roomState.projectiles.push({
+      x: player.x + Math.cos(baseAngle) * 26,
+      y: player.y + Math.sin(baseAngle) * 26,
+      vx: Math.cos(baseAngle) * CONFIG.WATER_PRISON_SPEED,
+      vy: Math.sin(baseAngle) * CONFIG.WATER_PRISON_SPEED,
+      radius: 15,
+      damage: CONFIG.WATER_PRISON_DAMAGE,
+      element: 'water',
+      kind: 'water_prison',
+      life: 1.7
+    });
+  } else if (el === 'lightning') {
+    // 전기 우클릭: 쿨타임 5초, 지정 구역에 1.5초 동안 0.5초마다 천둥 낙뢰
+    player.skillTimer = CONFIG.THUNDER_COOLDOWN;
+    const tx = Math.max(CONFIG.WALL_THICKNESS + 20, Math.min(CONFIG.CANVAS_WIDTH - CONFIG.WALL_THICKNESS - 20, mouse.x));
+    const ty = Math.max(CONFIG.WALL_THICKNESS + 20, Math.min(CONFIG.CANVAS_HEIGHT - CONFIG.WALL_THICKNESS - 20, mouse.y));
+
+    const zone = {
+      x: tx,
+      y: ty,
+      radius: CONFIG.THUNDER_RADIUS,
+      life: CONFIG.THUNDER_DURATION,
+      maxLife: CONFIG.THUNDER_DURATION,
+      tickTimer: CONFIG.THUNDER_INTERVAL,
+      strikesLeft: 3 // 시전 즉시 1회 + 0.5초, 1.0초, 1.5초에 3회 추가 낙뢰
+    };
+    roomState.thunderZones.push(zone);
+    triggerThunderStrike(tx, ty, CONFIG.THUNDER_RADIUS);
+  } else if (el === 'grass') {
+    // 풀 우클릭: 근접형 식인 식물 소환
+    player.skillTimer = CONFIG.FLYTRAP_COOLDOWN;
+    const fx = Math.max(CONFIG.WALL_THICKNESS + 35, Math.min(CONFIG.CANVAS_WIDTH - CONFIG.WALL_THICKNESS - 35, mouse.x));
+    const fy = Math.max(CONFIG.WALL_THICKNESS + 35, Math.min(CONFIG.CANVAS_HEIGHT - CONFIG.WALL_THICKNESS - 35, mouse.y));
+
+    roomState.flytraps.push({
+      x: fx,
+      y: fy,
+      radius: 20,
+      life: CONFIG.FLYTRAP_DURATION,
+      maxLife: CONFIG.FLYTRAP_DURATION,
+      attackTimer: 0.25,
+      biteAnim: 0
+    });
+    spawnParticles(fx, fy, '#16a34a', 14);
+    addFloatingText(fx, fy - 30, '🌿 식인 식물 소환!', '#15803d');
+  }
+}
+
+// 지정 구역 천둥 1회 낙뢰 실행
+function triggerThunderStrike(tx, ty, radius) {
+  roomState.lightningBolts.push({
+    type: 'thunder',
+    x: tx,
+    y: ty,
+    radius,
+    life: 0.28
+  });
+  spawnParticles(tx, ty, '#facc15', 18);
+
+  const targets = getAllEnemyTargets();
+  for (const target of targets) {
+    if (circlesOverlap(tx, ty, radius, target.x, target.y, target.radius)) {
+      dealElementDamageToEnemy(target, CONFIG.THUNDER_DAMAGE, 'lightning', {
+        sourceX: tx,
+        sourceY: ty
+      });
+    }
+  }
+}
+
+// 바위 우클릭 차징 완료 후 발사 (1초당 속도 +50%, 데미지 +25%)
+function releaseChargedRock() {
+  const chargeSec = Math.min(CONFIG.ROCK_CHARGE_MAX_TIME, player.rockChargeTime);
+  player.isChargingRock = false;
+  player.rockChargeTime = 0;
+  player.skillTimer = CONFIG.ROCK_CHARGE_COOLDOWN;
+
+  const speedMult = 1 + chargeSec * CONFIG.ROCK_CHARGE_SPEED_PER_SEC;
+  const damageMult = 1 + chargeSec * CONFIG.ROCK_CHARGE_DAMAGE_PER_SEC;
+  const finalSpeed = CONFIG.ROCK_CHARGE_BASE_SPEED * speedMult;
+  const finalDamage = Math.round(CONFIG.ROCK_CHARGE_BASE_DAMAGE * damageMult);
+  const finalRadius = 15 + Math.round(chargeSec * 4.5);
+
+  const angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+  roomState.projectiles.push({
+    x: player.x + Math.cos(angle) * 28,
+    y: player.y + Math.sin(angle) * 28,
+    vx: Math.cos(angle) * finalSpeed,
+    vy: Math.sin(angle) * finalSpeed,
+    radius: finalRadius,
+    damage: finalDamage,
+    element: 'rock',
+    kind: 'rock_charged',
+    chargeSec,
+    rotation: 0,
+    hitTargets: new Set(),
+    life: 2.8
+  });
+
+  if (chargeSec >= 0.5) {
+    addFloatingText(player.x, player.y - 44, `🪨 ${chargeSec.toFixed(1)}초 차징 발사!`, '#92400e');
+  }
+}
+
+// ============================================================================
+// 원소 데미지 · 상태이상(화상 3중첩·젖음·감옥·속박) · 원소 반응 처리
+// ============================================================================
+function getAllEnemyTargets() {
+  const list = [...roomState.monsters];
+  if (roomState.boss) list.push(roomState.boss);
+  return list;
+}
+
+function dealElementDamageToEnemy(target, baseDamage, atkElement, opts = {}) {
+  if (!target || target.hp <= 0) return 0;
+
+  let mult = getElementMultiplier(atkElement, target.element);
+  let bonusNote = '';
+
+  // [전기 반응] 젖음 효과가 있는 적에게 50% 추가 데미지
+  if (atkElement === 'lightning' && target.wetTimer > 0) {
+    mult *= CONFIG.WET_ELECTRIC_BONUS;
+    bonusNote = '⚡감전!';
+  }
+
+  const finalDmg = Math.max(1, Math.round(baseDamage * mult));
+  target.hp -= finalDmg;
+  target.hitFlash = 0.12;
+
+  // [불 효과] 마지막으로 입힌 데미지의 10%를 5초간 입히는 화상 (최대 3중첩)
+  if (atkElement === 'fire') {
+    target.burnStacks = Math.min(CONFIG.BURN_MAX_STACKS, (target.burnStacks || 0) + 1);
+    target.burnTimer = CONFIG.BURN_DURATION;
+    target.burnTickDamage = Math.max(1, Math.round(finalDmg * CONFIG.BURN_DAMAGE_RATIO));
+  }
+
+  // [물 효과] 모든 물 공격은 5초 유지되는 젖음 효과 부여
+  if (atkElement === 'water') {
+    target.wetTimer = CONFIG.WET_DURATION;
+    if (opts.trapBubble) {
+      target.trapTimer = CONFIG.WATER_PRISON_DURATION;
+      target.trapType = 'bubble';
+    }
+  }
+
+  // [풀 반응] 젖음 효과가 있는 적을 공격 시 젖음 삭제 + 덩굴/식인 식물 지속시간 +1초
+  if (atkElement === 'grass' && target.wetTimer > 0) {
+    target.wetTimer = 0;
+    if (opts.extendEntity) {
+      opts.extendEntity.life += 1.0;
+      if (opts.extendEntity.maxLife) opts.extendEntity.maxLife += 1.0;
+    }
+    addFloatingText(target.x, target.y - 44, '💧젖음 흡수 (+1초)', '#15803d');
+  }
+
+  // [바위 반응] 모든 바위 마법은 화상 효과 삭제
+  if (atkElement === 'rock' && target.burnStacks > 0) {
+    target.burnStacks = 0;
+    target.burnTimer = 0;
+    target.burnTickDamage = 0;
+    addFloatingText(target.x, target.y - 44, '🪨화상 진화!', '#78350f');
+  }
+
+  // [바위 좌클릭 넉백] 굴러가는 바위 명중 시 뒤로 살짝 밀쳐냄
+  if (opts.knockbackDirX !== undefined && opts.knockbackDirY !== undefined) {
+    const kbScale = target === roomState.boss ? 0.35 : 1.0;
+    target.x += opts.knockbackDirX * CONFIG.ROCK_KNOCKBACK_DIST * kbScale;
+    target.y += opts.knockbackDirY * CONFIG.ROCK_KNOCKBACK_DIST * kbScale;
+    resolveCollisions(target);
+  }
+
+  const label = bonusNote
+    ? `${bonusNote} -${finalDmg}`
+    : mult > 1 ? `약점! -${finalDmg}` : mult < 1 ? `내성 -${finalDmg}` : `-${finalDmg}`;
+  const labelColor = bonusNote ? '#ca8a04' : mult > 1 ? '#d97706' : mult < 1 ? '#64748b' : '#111827';
+  addFloatingText(target.x, target.y - target.radius - 8, label, labelColor);
+
+  // 처치 처리 (슬라임 분열 및 보스 클리어 포함)
+  if (target.hp <= 0) {
+    handleEnemyDefeated(target);
+  }
+
+  return finalDmg;
+}
+
+function handleEnemyDefeated(target) {
+  if (target === roomState.boss) {
+    spawnParticles(target.x, target.y, '#92400e', 30);
+    roomState.boss = null;
+    onRoomCleared();
+    return;
+  }
+
+  const idx = roomState.monsters.indexOf(target);
+  if (idx === -1) return;
+  roomState.monsters.splice(idx, 1);
+  roomState.totalKills += 1;
+  spawnParticles(target.x, target.y, ELEMENTS[target.element].color, 14);
+
+  // 슬라임은 최대 3번(splitGen 0 -> 1 -> 2 -> 3)까지 2마리로 분열
+  if (target.kind === 'slime' && target.splitGen < CONFIG.SLIME_MAX_SPLITS) {
+    const nextGen = target.splitGen + 1;
+    const childHp = Math.max(12, Math.round(target.maxHp * CONFIG.SLIME_SPLIT_HP_RATIO));
+    const offsetAngle = Math.random() * Math.PI;
+    for (let s = 0; s < 2; s++) {
+      const sign = s === 0 ? -1 : 1;
+      const sx = target.x + Math.cos(offsetAngle) * 18 * sign;
+      const sy = target.y + Math.sin(offsetAngle) * 18 * sign;
+      const child = createMonster('slime', sx, sy, target.element, childHp, nextGen);
+      resolveCollisions(child);
+      roomState.monsters.push(child);
+    }
+    addFloatingText(target.x, target.y - 20, `💦 분열! (${nextGen}/3단계)`, ELEMENTS[target.element].color);
+  }
+}
+
+// 덩굴 범위 내 적에게 1초 속박 및 데미지 적용
+function applyVineEffects(vineObj) {
+  const targets = getAllEnemyTargets();
+  for (const target of targets) {
+    if (vineObj.hitTargets.has(target)) continue;
+    if (circlesOverlap(vineObj.x, vineObj.y, vineObj.radius, target.x, target.y, target.radius)) {
+      vineObj.hitTargets.add(target);
+      target.trapTimer = Math.max(target.trapTimer, CONFIG.VINE_DURATION);
+      target.trapType = 'vine';
+      dealElementDamageToEnemy(target, CONFIG.VINE_DAMAGE, 'grass', {
+        extendEntity: vineObj
+      });
+    }
+  }
+}
+
+// 전기 좌클릭 적중 시 주변 적에게 연쇄 번개 전이
+function triggerChainLightning(firstTarget, baseDamage) {
+  const visited = new Set([firstTarget]);
+  let curr = firstTarget;
+  let currDmg = Math.round(baseDamage * CONFIG.LIGHTNING_CHAIN_RATIO);
+
+  for (let c = 0; c < CONFIG.LIGHTNING_CHAIN_MAX; c++) {
+    let nearest = null;
+    let minDist = CONFIG.LIGHTNING_CHAIN_RANGE;
+    for (const candidate of getAllEnemyTargets()) {
+      if (visited.has(candidate) || candidate.hp <= 0) continue;
+      const d = Math.hypot(candidate.x - curr.x, candidate.y - curr.y);
+      if (d < minDist) {
+        minDist = d;
+        nearest = candidate;
+      }
+    }
+    if (!nearest) break;
+
+    visited.add(nearest);
+    roomState.lightningBolts.push({
+      type: 'chain',
+      x1: curr.x,
+      y1: curr.y,
+      x2: nearest.x,
+      y2: nearest.y,
+      life: 0.22
+    });
+    spawnParticles(nearest.x, nearest.y, '#facc15', 7);
+    dealElementDamageToEnemy(nearest, currDmg, 'lightning');
+
+    curr = nearest;
+    currDmg = Math.max(4, Math.round(currDmg * CONFIG.LIGHTNING_CHAIN_RATIO));
+  }
+}
+
+// ============================================================================
+// 적 마법사 원소 마법 시전 로직
+// ============================================================================
+function enemyWizardCastPrimary(w) {
+  const angle = Math.atan2(player.y - w.y, player.x - w.x);
+  roomState.enemyProjectiles.push({
+    x: w.x + Math.cos(angle) * 20,
+    y: w.y + Math.sin(angle) * 20,
+    vx: Math.cos(angle) * CONFIG.WIZARD_BULLET_SPEED,
+    vy: Math.sin(angle) * CONFIG.WIZARD_BULLET_SPEED,
+    radius: 8,
+    element: w.element,
+    kind: 'normal',
+    damage: CONFIG.WIZARD_DAMAGE,
+    life: 2.6
+  });
+}
+
+function enemyWizardCastSkill(w) {
+  const baseAngle = Math.atan2(player.y - w.y, player.x - w.x);
+  const el = w.element;
+
+  if (el === 'fire') {
+    // 적 불 마법사: 3갈래 화염탄
+    for (let i = -1; i <= 1; i++) {
+      const a = baseAngle + i * 0.22;
+      roomState.enemyProjectiles.push({
+        x: w.x + Math.cos(a) * 22,
+        y: w.y + Math.sin(a) * 22,
+        vx: Math.cos(a) * 280,
+        vy: Math.sin(a) * 280,
+        radius: 9,
+        element: 'fire',
+        kind: 'normal',
+        damage: CONFIG.WIZARD_DAMAGE,
+        life: 2.4
+      });
+    }
+  } else if (el === 'water') {
+    // 적 물 마법사: 플레이어를 1초간 가두는 물방울탄
+    roomState.enemyProjectiles.push({
+      x: w.x + Math.cos(baseAngle) * 22,
+      y: w.y + Math.sin(baseAngle) * 22,
+      vx: Math.cos(baseAngle) * 270,
+      vy: Math.sin(baseAngle) * 270,
+      radius: 12,
+      element: 'water',
+      kind: 'bubble_trap',
+      damage: 10,
+      life: 2.5
+    });
+  } else if (el === 'lightning') {
+    // 적 전기 마법사: 고속 2연발 번개탄
+    for (let i = 0; i < 2; i++) {
+      const perp = baseAngle + Math.PI / 2;
+      const off = (i === 0 ? -1 : 1) * 10;
+      roomState.enemyProjectiles.push({
+        x: w.x + Math.cos(perp) * off,
+        y: w.y + Math.sin(perp) * off,
+        vx: Math.cos(baseAngle) * 390,
+        vy: Math.sin(baseAngle) * 390,
+        radius: 8,
+        element: 'lightning',
+        kind: 'normal',
+        damage: CONFIG.WIZARD_DAMAGE,
+        life: 2.0
+      });
+    }
+  } else if (el === 'grass') {
+    // 적 풀 마법사: 1초 덩굴 속박탄
+    roomState.enemyProjectiles.push({
+      x: w.x + Math.cos(baseAngle) * 22,
+      y: w.y + Math.sin(baseAngle) * 22,
+      vx: Math.cos(baseAngle) * 265,
+      vy: Math.sin(baseAngle) * 265,
+      radius: 11,
+      element: 'grass',
+      kind: 'vine_trap',
+      damage: 10,
+      life: 2.5
+    });
+  } else if (el === 'rock') {
+    // 적 바위 마법사: 거대 바위탄
+    roomState.enemyProjectiles.push({
+      x: w.x + Math.cos(baseAngle) * 24,
+      y: w.y + Math.sin(baseAngle) * 24,
+      vx: Math.cos(baseAngle) * 235,
+      vy: Math.sin(baseAngle) * 235,
+      radius: 15,
+      element: 'rock',
+      kind: 'normal',
+      damage: Math.round(CONFIG.WIZARD_DAMAGE * 1.35),
+      life: 2.8
+    });
+  }
+}
+
+// ============================================================================
+// 충돌 · 플레이어 피격 · 유틸리티
+// ============================================================================
 function resolveCollisions(entity) {
-  const minX = CONFIG.WALL_THICKNESS + entity.radius;
-  const maxX = CONFIG.CANVAS_WIDTH - CONFIG.WALL_THICKNESS - entity.radius;
-  const minY = CONFIG.WALL_THICKNESS + entity.radius;
-  const maxY = CONFIG.CANVAS_HEIGHT - CONFIG.WALL_THICKNESS - entity.radius;
+  const r = entity.radius || CONFIG.PLAYER_RADIUS;
+  const minX = CONFIG.WALL_THICKNESS + r;
+  const maxX = CONFIG.CANVAS_WIDTH - CONFIG.WALL_THICKNESS - r;
+  const minY = CONFIG.WALL_THICKNESS + r;
+  const maxY = CONFIG.CANVAS_HEIGHT - CONFIG.WALL_THICKNESS - r;
 
   entity.x = Math.max(minX, Math.min(maxX, entity.x));
   entity.y = Math.max(minY, Math.min(maxY, entity.y));
@@ -1020,7 +1570,7 @@ function resolveCollisions(entity) {
     const dx = entity.x - obs.x;
     const dy = entity.y - obs.y;
     const dist = Math.hypot(dx, dy);
-    const minDist = entity.radius + obs.radius;
+    const minDist = r + obs.radius;
     if (dist < minDist && dist > 0.001) {
       const push = minDist - dist;
       entity.x += (dx / dist) * push;
@@ -1029,10 +1579,15 @@ function resolveCollisions(entity) {
   }
 }
 
-function damagePlayer(amount) {
+function damagePlayer(amount, trapKind = null) {
   if (player.invulnTimer > 0 || player.dashTimer > 0 || gameState !== 'PLAYING') return;
   player.hp = Math.max(0, player.hp - amount);
   player.invulnTimer = CONFIG.INVULN_AFTER_HIT;
+  if (trapKind) {
+    player.trapTimer = 1.0;
+    player.trapType = trapKind;
+    addFloatingText(player.x, player.y - 48, trapKind === 'bubble' ? '🫧 물방울 속박!' : '🌿 덩굴 속박!', '#2563eb');
+  }
   addFloatingText(player.x, player.y - 34, `-${amount}`, '#dc2626');
   spawnParticles(player.x, player.y, '#ef4444', 12);
 
@@ -1082,162 +1637,300 @@ function addFloatingText(x, y, text, color) {
 function update(dt) {
   if (gameState !== 'PLAYING') return;
 
-  // 쿨타임 감소
   if (player.primaryTimer > 0) player.primaryTimer -= dt;
   if (player.skillTimer > 0) player.skillTimer -= dt;
   if (player.dashCooldownTimer > 0) player.dashCooldownTimer -= dt;
   if (player.invulnTimer > 0) player.invulnTimer -= dt;
+  if (player.trapTimer > 0) {
+    player.trapTimer -= dt;
+    if (player.trapTimer <= 0) player.trapType = null;
+  }
 
+  // 좌클릭 홀드 처리 (불 마법은 홀드 시 연속 발사)
   if (mouse.leftDown && player.primaryTimer <= 0) {
     tryPrimaryAttack();
   }
 
-  // 플레이어 이동 처리
-  if (player.dashTimer > 0) {
-    player.dashTimer -= dt;
-    player.x += player.dashDirX * CONFIG.DASH_SPEED * dt;
-    player.y += player.dashDirY * CONFIG.DASH_SPEED * dt;
-  } else {
-    let mx = 0;
-    let my = 0;
-    if (keys['KeyW'] || keys['ArrowUp']) my -= 1;
-    if (keys['KeyS'] || keys['ArrowDown']) my += 1;
-    if (keys['KeyA'] || keys['ArrowLeft']) mx -= 1;
-    if (keys['KeyD'] || keys['ArrowRight']) mx += 1;
+  // 바위 우클릭 홀드 차징 진행 (최대 3초)
+  if (player.isChargingRock) {
+    if (getCurrentElement() === 'rock' && mouse.rightDown) {
+      player.rockChargeTime = Math.min(CONFIG.ROCK_CHARGE_MAX_TIME, player.rockChargeTime + dt);
+    } else {
+      releaseChargedRock();
+    }
+  }
 
-    if (mx !== 0 || my !== 0) {
-      const len = Math.hypot(mx, my);
-      mx /= len;
-      my /= len;
-      player.x += mx * CONFIG.PLAYER_SPEED * dt;
-      player.y += my * CONFIG.PLAYER_SPEED * dt;
-      player.walkAnim += dt * 11;
+  // 플레이어 이동 처리 (속박 상태가 아닐 때만 이동 가능)
+  if (player.trapTimer <= 0) {
+    if (player.dashTimer > 0) {
+      player.dashTimer -= dt;
+      player.x += player.dashDirX * CONFIG.DASH_SPEED * dt;
+      player.y += player.dashDirY * CONFIG.DASH_SPEED * dt;
+    } else {
+      let mx = 0;
+      let my = 0;
+      if (keys['KeyW'] || keys['ArrowUp']) my -= 1;
+      if (keys['KeyS'] || keys['ArrowDown']) my += 1;
+      if (keys['KeyA'] || keys['ArrowLeft']) mx -= 1;
+      if (keys['KeyD'] || keys['ArrowRight']) mx += 1;
+
+      if (mx !== 0 || my !== 0) {
+        const len = Math.hypot(mx, my);
+        mx /= len;
+        my /= len;
+        const chargeSlow = player.isChargingRock ? 0.72 : 1.0;
+        player.x += mx * CONFIG.PLAYER_SPEED * chargeSlow * dt;
+        player.y += my * CONFIG.PLAYER_SPEED * chargeSlow * dt;
+        player.walkAnim += dt * 11;
+      }
     }
   }
   resolveCollisions(player);
 
-  // 마법서 방 상호작용 (다가가면 마법서 습득)
-  if (roomState.type === 'SPELLBOOK' && roomState.spellbook && !roomState.spellbook.collected) {
+  // 마법서 방 보물상자 및 마법서 상호작용
+  if (roomState.type === 'SPELLBOOK' && roomState.spellbook) {
     const sb = roomState.spellbook;
-    if (circlesOverlap(player.x, player.y, player.radius + 14, sb.x, sb.y, 34)) {
-      sb.collected = true;
-      const elObj = ELEMENTS[sb.element];
-      if (!player.unlockedElements.includes(sb.element)) {
-        player.unlockedElements.push(sb.element);
-        player.currentSlotIndex = player.unlockedElements.length - 1;
-        addFloatingText(sb.x, sb.y - 40, `📖 ${elObj.icon} ${elObj.name} 마법서 습득! (E/Q 전환)`, elObj.color);
-      } else {
-        player.hp = Math.min(player.maxHp, player.hp + 25);
-        addFloatingText(sb.x, sb.y - 40, `💖 마력 흡수! 체력 +25 회복!`, '#16a34a');
+    if (!sb.chestOpened) {
+      // 플레이어가 상자에 다가가면 상자가 열리고 마법서가 위로 솟아오름
+      if (circlesOverlap(player.x, player.y, player.radius + 18, sb.chestX, sb.chestY, 44)) {
+        sb.chestOpened = true;
+        sb.openAnim = 0;
+        sb.x = sb.chestX;
+        sb.y = sb.chestY - 12;
+        const elObj = ELEMENTS[sb.element];
+        spawnParticles(sb.chestX, sb.chestY - 16, '#fbbf24', 18);
+        spawnParticles(sb.chestX, sb.chestY - 16, elObj.color, 14);
+        addFloatingText(sb.chestX, sb.chestY - 56, `✨ 상자 열림! ${elObj.icon} ${elObj.name} 마법서 출현!`, '#d97706');
       }
-      spawnParticles(sb.x, sb.y, elObj.color, 20);
+    } else if (!sb.collected) {
+      // 상자가 열린 뒤 마법서가 떠오르는 애니메이션
+      sb.openAnim = Math.min(1, sb.openAnim + dt * 2.6);
+      sb.y = (sb.chestY - 12) - Math.sin(sb.openAnim * Math.PI * 0.5) * 58;
+
+      // 떠오른 뒤(0.35초 이후) 마법서에 닿으면 습득
+      if (sb.openAnim >= 0.45 && circlesOverlap(player.x, player.y, player.radius + 14, sb.x, sb.y, 34)) {
+        sb.collected = true;
+        const elObj = ELEMENTS[sb.element];
+        if (!player.unlockedElements.includes(sb.element)) {
+          player.unlockedElements.push(sb.element);
+          player.currentSlotIndex = player.unlockedElements.length - 1;
+          addFloatingText(sb.x, sb.y - 40, `📖 ${elObj.icon} ${elObj.name} 마법서 습득! (E/Q 전환)`, elObj.color);
+        } else {
+          player.hp = Math.min(player.maxHp, player.hp + 25);
+          addFloatingText(sb.x, sb.y - 40, `💖 마력 흡수! 체력 +25 회복!`, '#16a34a');
+        }
+        spawnParticles(sb.x, sb.y, elObj.color, 22);
+      }
     }
   }
 
-  // 아군 투사체 업데이트 및 피격 판정
+  // 풀 좌클릭 덩굴 장판 업데이트
+  for (let i = roomState.vines.length - 1; i >= 0; i--) {
+    const v = roomState.vines[i];
+    v.life -= dt;
+    applyVineEffects(v);
+    if (v.life <= 0) {
+      roomState.vines.splice(i, 1);
+    }
+  }
+
+  // 풀 우클릭 식인 식물 소환수 업데이트
+  for (let i = roomState.flytraps.length - 1; i >= 0; i--) {
+    const ft = roomState.flytraps[i];
+    ft.life -= dt;
+    ft.attackTimer -= dt;
+    if (ft.biteAnim > 0) ft.biteAnim -= dt;
+
+    if (ft.attackTimer <= 0) {
+      let nearest = null;
+      let bestDist = CONFIG.FLYTRAP_RANGE;
+      for (const target of getAllEnemyTargets()) {
+        if (target.hp <= 0) continue;
+        const d = Math.hypot(target.x - ft.x, target.y - ft.y);
+        if (d <= bestDist + target.radius) {
+          bestDist = d;
+          nearest = target;
+        }
+      }
+      if (nearest) {
+        ft.attackTimer = CONFIG.FLYTRAP_ATTACK_INTERVAL;
+        ft.biteAnim = 0.22;
+        spawnParticles(nearest.x, nearest.y, '#22c55e', 6);
+        dealElementDamageToEnemy(nearest, CONFIG.FLYTRAP_BITE_DAMAGE, 'grass', {
+          extendEntity: ft
+        });
+      }
+    }
+
+    if (ft.life <= 0) {
+      roomState.flytraps.splice(i, 1);
+    }
+  }
+
+  // 아군 투사체 업데이트
   for (let i = roomState.projectiles.length - 1; i >= 0; i--) {
     const p = roomState.projectiles[i];
     p.x += p.vx * dt;
     p.y += p.vy * dt;
     p.life -= dt;
+    if (p.rotation !== undefined) p.rotation += dt * 10;
 
-    // 벽 또는 장애물 충돌 시 소멸
-    if (
-      p.life <= 0 ||
+    // 벽 또는 장애물 충돌 (바위 투사체는 여기서 부서짐)
+    const hitWallOrObs = (
       p.x < CONFIG.WALL_THICKNESS ||
       p.x > CONFIG.CANVAS_WIDTH - CONFIG.WALL_THICKNESS ||
       p.y < CONFIG.WALL_THICKNESS ||
       p.y > CONFIG.CANVAS_HEIGHT - CONFIG.WALL_THICKNESS ||
       roomState.obstacles.some(o => circlesOverlap(p.x, p.y, p.radius * 0.7, o.x, o.y, o.radius))
-    ) {
-      spawnParticles(p.x, p.y, ELEMENTS[p.element].color, 5);
+    );
+
+    if (p.life <= 0 || hitWallOrObs) {
+      if (p.kind === 'fireball') {
+        explodeFireball(p.x, p.y, p.damage);
+      } else if (p.element === 'rock') {
+        // 바위가 벽이나 장애물에 부딪혀 산산조각 나는 이펙트
+        spawnParticles(p.x, p.y, '#92400e', 14);
+        spawnParticles(p.x, p.y, '#d6b899', 8);
+      } else {
+        spawnParticles(p.x, p.y, ELEMENTS[p.element].color, 5);
+      }
       roomState.projectiles.splice(i, 1);
       continue;
     }
 
-    // 일반 몬스터 피격
-    let consumed = false;
-    for (let j = roomState.monsters.length - 1; j >= 0; j--) {
-      const m = roomState.monsters[j];
-      if (circlesOverlap(p.x, p.y, p.radius, m.x, m.y, m.radius)) {
-        if (p.pierce && p.hitIds && p.hitIds.has(m)) continue;
-        if (p.pierce && p.hitIds) p.hitIds.add(m);
-
-        const mult = getElementMultiplier(p.element, m.element);
-        const dmg = Math.round(p.damage * mult);
-        m.hp -= dmg;
-        m.hitFlash = 0.12;
-
-        const tag = mult > 1 ? `약점! -${dmg}` : mult < 1 ? `내성 -${dmg}` : `-${dmg}`;
-        const tagColor = mult > 1 ? '#d97706' : mult < 1 ? '#64748b' : '#111827';
-        addFloatingText(m.x, m.y - 26, tag, tagColor);
-        spawnParticles(p.x, p.y, ELEMENTS[p.element].color, 6);
-
-        if (m.hp <= 0) {
-          spawnParticles(m.x, m.y, ELEMENTS[m.element].color, 14);
-          roomState.monsters.splice(j, 1);
-          roomState.totalKills += 1;
+    // 모든 적(슬라임 + 적 마법사 + 보스) 피격 검사
+    if (p.element === 'rock') {
+      // 바위 마법의 모든 공격(좌클릭 구르는 바위 / 우클릭 차징 거대 바위)은 적에게 맞아도 사라지지 않고 관통!
+      const spd = Math.hypot(p.vx, p.vy) || 1;
+      for (const target of getAllEnemyTargets()) {
+        if (target.hp <= 0) continue;
+        if (p.hitTargets && p.hitTargets.has(target)) continue;
+        if (circlesOverlap(p.x, p.y, p.radius, target.x, target.y, target.radius)) {
+          if (p.hitTargets) p.hitTargets.add(target);
+          spawnParticles(target.x, target.y, '#92400e', 10);
+          const opts = p.kind === 'rock_roll'
+            ? { knockbackDirX: p.vx / spd, knockbackDirY: p.vy / spd }
+            : { knockbackDirX: (p.vx / spd) * 1.4, knockbackDirY: (p.vy / spd) * 1.4 };
+          dealElementDamageToEnemy(target, p.damage, 'rock', opts);
         }
-
-        if (!p.pierce) {
-          consumed = true;
+      }
+    } else {
+      let hitTarget = null;
+      for (const target of getAllEnemyTargets()) {
+        if (target.hp > 0 && circlesOverlap(p.x, p.y, p.radius, target.x, target.y, target.radius)) {
+          hitTarget = target;
           break;
         }
       }
-    }
-    if (consumed) {
-      roomState.projectiles.splice(i, 1);
-      continue;
-    }
 
-    // 예티 보스 피격
-    if (roomState.boss && circlesOverlap(p.x, p.y, p.radius, roomState.boss.x, roomState.boss.y, roomState.boss.radius)) {
-      const b = roomState.boss;
-      if (!(p.pierce && p.hitIds && p.hitIds.has(b))) {
-        if (p.pierce && p.hitIds) p.hitIds.add(b);
-        const mult = getElementMultiplier(p.element, b.element);
-        const dmg = Math.round(p.damage * mult);
-        b.hp -= dmg;
-        b.hitFlash = 0.12;
-
-        const tag = mult > 1 ? `약점! -${dmg}` : mult < 1 ? `내성 -${dmg}` : `-${dmg}`;
-        const tagColor = mult > 1 ? '#d97706' : mult < 1 ? '#64748b' : '#111827';
-        addFloatingText(b.x, b.y - 54, tag, tagColor);
-        spawnParticles(p.x, p.y, ELEMENTS[p.element].color, 8);
-
-        if (b.hp <= 0) {
-          spawnParticles(b.x, b.y, '#92400e', 30);
-          roomState.boss = null;
-          onRoomCleared();
+      if (hitTarget) {
+        if (p.kind === 'fireball') {
+          explodeFireball(p.x, p.y, p.damage);
+        } else if (p.kind === 'water_prison') {
+          spawnParticles(p.x, p.y, '#3b82f6', 14);
+          dealElementDamageToEnemy(hitTarget, p.damage, 'water', { trapBubble: true });
+        } else if (p.kind === 'electric_bolt') {
+          spawnParticles(p.x, p.y, '#eab308', 10);
+          dealElementDamageToEnemy(hitTarget, p.damage, 'lightning');
+          triggerChainLightning(hitTarget, p.damage);
+        } else {
+          spawnParticles(p.x, p.y, ELEMENTS[p.element].color, 8);
+          dealElementDamageToEnemy(hitTarget, p.damage, p.element);
         }
-        if (!p.pierce) {
-          roomState.projectiles.splice(i, 1);
-        }
+        roomState.projectiles.splice(i, 1);
       }
     }
   }
 
-  // 몬스터 AI 업데이트 (시야 내 플레이어 추적)
-  for (const m of roomState.monsters) {
+  // 모든 적(슬라임·적 마법사·예티 보스) 상태이상(화상 3중첩 틱, 젖음, 속박) 업데이트
+  for (const target of getAllEnemyTargets()) {
+    if (target.hitFlash > 0) target.hitFlash -= dt;
+    if (target.wetTimer > 0) target.wetTimer = Math.max(0, target.wetTimer - dt);
+    if (target.trapTimer > 0) {
+      target.trapTimer -= dt;
+      if (target.trapTimer <= 0) target.trapType = null;
+    }
+
+    // 화상 지속 피해 (1초마다 마지막 데미지 10% × 중첩 수)
+    if (target.burnStacks > 0 && target.burnTimer > 0) {
+      target.burnTimer -= dt;
+      target.burnTickTimer -= dt;
+      if (target.burnTickTimer <= 0) {
+        target.burnTickTimer = 1.0;
+        const tickDmg = Math.max(1, target.burnTickDamage * target.burnStacks);
+        target.hp -= tickDmg;
+        addFloatingText(target.x, target.y - target.radius - 20, `🔥-${tickDmg}`, '#ef4444');
+        spawnParticles(target.x, target.y, '#f97316', 4);
+        if (target.hp <= 0) {
+          handleEnemyDefeated(target);
+        }
+      }
+      if (target.burnTimer <= 0) {
+        target.burnStacks = 0;
+        target.burnTickDamage = 0;
+      }
+    }
+  }
+
+  // 몬스터 AI 업데이트 (슬라임 추적 vs 적 마법사 원거리 시전)
+  for (let i = roomState.monsters.length - 1; i >= 0; i--) {
+    const m = roomState.monsters[i];
+    if (!m || m.hp <= 0) continue;
     m.bobPhase += dt * 6;
-    if (m.hitFlash > 0) m.hitFlash -= dt;
+
+    // 물방울 감옥 또는 덩굴에 갇혀 있으면 행동 정지
+    if (m.trapTimer > 0) continue;
 
     const dx = player.x - m.x;
     const dy = player.y - m.y;
     const dist = Math.hypot(dx, dy);
 
-    if (dist < CONFIG.MONSTER_DETECT_RANGE && dist > 1) {
-      m.x += (dx / dist) * m.speed * dt;
-      m.y += (dy / dist) * m.speed * dt;
-      resolveCollisions(m);
-    }
+    if (m.kind === 'slime') {
+      if (dist < CONFIG.MONSTER_DETECT_RANGE && dist > 1) {
+        m.x += (dx / dist) * m.speed * dt;
+        m.y += (dy / dist) * m.speed * dt;
+        resolveCollisions(m);
+      }
+      if (circlesOverlap(player.x, player.y, player.radius, m.x, m.y, m.radius)) {
+        damagePlayer(CONFIG.MONSTER_CONTACT_DAMAGE);
+      }
+    } else if (m.kind === 'wizard') {
+      // 적 마법사는 적정 거리를 유지하며 좌우로 움직이고 마법 시전
+      if (dist < CONFIG.MONSTER_DETECT_RANGE + 80 && dist > 1) {
+        const nx = dx / dist;
+        const ny = dy / dist;
+        let moveX = -ny * m.strafeDir * 0.65;
+        let moveY = nx * m.strafeDir * 0.65;
 
-    if (circlesOverlap(player.x, player.y, player.radius, m.x, m.y, m.radius)) {
-      damagePlayer(CONFIG.MONSTER_CONTACT_DAMAGE);
+        if (dist > CONFIG.WIZARD_PREFERRED_DIST + 35) {
+          moveX += nx * 0.8;
+          moveY += ny * 0.8;
+        } else if (dist < CONFIG.WIZARD_PREFERRED_DIST - 35) {
+          moveX -= nx * 0.8;
+          moveY -= ny * 0.8;
+        }
+
+        const mLen = Math.hypot(moveX, moveY) || 1;
+        m.x += (moveX / mLen) * m.speed * dt;
+        m.y += (moveY / mLen) * m.speed * dt;
+        resolveCollisions(m);
+
+        m.primaryTimer -= dt;
+        if (m.primaryTimer <= 0) {
+          m.primaryTimer = CONFIG.WIZARD_PRIMARY_CD;
+          enemyWizardCastPrimary(m);
+        }
+
+        m.skillTimer -= dt;
+        if (m.skillTimer <= 0) {
+          m.skillTimer = CONFIG.WIZARD_SKILL_CD;
+          enemyWizardCastSkill(m);
+        }
+      }
     }
   }
 
-  // 전투 방에서 모든 몬스터 처치 시 자동 클리어
+  // 전투 방 클리어 판정
   if (roomState.type === 'COMBAT' && !roomState.cleared && roomState.monsters.length === 0) {
     onRoomCleared();
   }
@@ -1246,46 +1939,47 @@ function update(dt) {
   if (roomState.boss) {
     const b = roomState.boss;
     b.walkPhase += dt * 4;
-    if (b.hitFlash > 0) b.hitFlash -= dt;
 
-    const dx = player.x - b.x;
-    const dy = player.y - b.y;
-    const dist = Math.hypot(dx, dy);
-    if (dist > 1) {
-      b.x += (dx / dist) * b.speed * dt;
-      b.y += (dy / dist) * b.speed * dt;
-      resolveCollisions(b);
-    }
+    if (b.trapTimer <= 0) {
+      const dx = player.x - b.x;
+      const dy = player.y - b.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 1) {
+        b.x += (dx / dist) * b.speed * dt;
+        b.y += (dy / dist) * b.speed * dt;
+        resolveCollisions(b);
+      }
 
-    if (circlesOverlap(player.x, player.y, player.radius, b.x, b.y, b.radius - 6)) {
-      damagePlayer(CONFIG.BOSS_DAMAGE);
-    }
+      if (circlesOverlap(player.x, player.y, player.radius, b.x, b.y, b.radius - 6)) {
+        damagePlayer(CONFIG.BOSS_DAMAGE);
+      }
 
-    // 보스 주기적 원소 속성 변경
-    b.elementShiftTimer -= dt;
-    if (b.elementShiftTimer <= 0) {
-      b.elementShiftTimer = 6.0;
-      b.element = ELEMENT_KEYS[Math.floor(Math.random() * ELEMENT_KEYS.length)];
-      const elObj = ELEMENTS[b.element];
-      addFloatingText(b.x, b.y - 65, `보스 속성 변환: ${elObj.icon} ${elObj.name}!`, elObj.color);
-    }
+      b.elementShiftTimer -= dt;
+      if (b.elementShiftTimer <= 0) {
+        b.elementShiftTimer = 6.0;
+        b.element = ELEMENT_KEYS[Math.floor(Math.random() * ELEMENT_KEYS.length)];
+        const elObj = ELEMENTS[b.element];
+        addFloatingText(b.x, b.y - 65, `보스 속성 변환: ${elObj.icon} ${elObj.name}!`, elObj.color);
+      }
 
-    // 보스 8방향 원소 탄막 발사
-    b.shotTimer -= dt;
-    if (b.shotTimer <= 0) {
-      b.shotTimer = CONFIG.BOSS_SHOT_COOLDOWN;
-      const baseA = Math.atan2(dy, dx);
-      for (let k = 0; k < 8; k++) {
-        const a = baseA + (Math.PI * 2 * k) / 8;
-        roomState.enemyProjectiles.push({
-          x: b.x + Math.cos(a) * 44,
-          y: b.y + Math.sin(a) * 44,
-          vx: Math.cos(a) * CONFIG.BOSS_BULLET_SPEED,
-          vy: Math.sin(a) * CONFIG.BOSS_BULLET_SPEED,
-          radius: 9,
-          element: b.element,
-          life: 3.2
-        });
+      b.shotTimer -= dt;
+      if (b.shotTimer <= 0) {
+        b.shotTimer = CONFIG.BOSS_SHOT_COOLDOWN;
+        const baseA = Math.atan2(dy, dx);
+        for (let k = 0; k < 8; k++) {
+          const a = baseA + (Math.PI * 2 * k) / 8;
+          roomState.enemyProjectiles.push({
+            x: b.x + Math.cos(a) * 44,
+            y: b.y + Math.sin(a) * 44,
+            vx: Math.cos(a) * CONFIG.BOSS_BULLET_SPEED,
+            vy: Math.sin(a) * CONFIG.BOSS_BULLET_SPEED,
+            radius: 9,
+            element: b.element,
+            kind: 'normal',
+            damage: CONFIG.BOSS_DAMAGE,
+            life: 3.2
+          });
+        }
       }
     }
   }
@@ -1310,12 +2004,13 @@ function update(dt) {
     }
 
     if (circlesOverlap(ep.x, ep.y, ep.radius, player.x, player.y, player.radius)) {
-      damagePlayer(CONFIG.BOSS_DAMAGE);
+      const trapKind = ep.kind === 'bubble_trap' ? 'bubble' : (ep.kind === 'vine_trap' ? 'vine' : null);
+      damagePlayer(ep.damage || CONFIG.BOSS_DAMAGE, trapKind);
       roomState.enemyProjectiles.splice(i, 1);
     }
   }
 
-  // 문 개방 상태일 때 문 접촉 시 다음 방으로 이동
+  // 문 이동 판정
   if (roomState.cleared) {
     for (const d of roomState.doors) {
       if (
@@ -1330,7 +2025,32 @@ function update(dt) {
     }
   }
 
-  // 파티클 및 떠오르는 텍스트 업데이트
+  // 전기 우클릭 지정 구역 천둥 장판 업데이트 (1.5초 동안 0.5초마다 낙뢰)
+  for (let i = roomState.thunderZones.length - 1; i >= 0; i--) {
+    const tz = roomState.thunderZones[i];
+    tz.life -= dt;
+    tz.tickTimer -= dt;
+
+    if (tz.tickTimer <= 0 && tz.strikesLeft > 0) {
+      tz.tickTimer += CONFIG.THUNDER_INTERVAL;
+      tz.strikesLeft -= 1;
+      triggerThunderStrike(tz.x, tz.y, tz.radius);
+    }
+
+    if (tz.life <= 0) {
+      if (tz.strikesLeft > 0) {
+        tz.strikesLeft = 0;
+        triggerThunderStrike(tz.x, tz.y, tz.radius);
+      }
+      roomState.thunderZones.splice(i, 1);
+    }
+  }
+
+  // 이펙트 타이머 감소
+  for (let i = roomState.lightningBolts.length - 1; i >= 0; i--) {
+    roomState.lightningBolts[i].life -= dt;
+    if (roomState.lightningBolts[i].life <= 0) roomState.lightningBolts.splice(i, 1);
+  }
   for (let i = roomState.particles.length - 1; i >= 0; i--) {
     const pt = roomState.particles[i];
     pt.x += pt.vx * dt;
@@ -1344,10 +2064,27 @@ function update(dt) {
     ft.life -= dt;
     if (ft.life <= 0) roomState.floatingTexts.splice(i, 1);
   }
+
+  if (roomState.stageBanner) {
+    roomState.stageBanner.life -= dt;
+    if (roomState.stageBanner.life <= 0) {
+      roomState.stageBanner = null;
+    }
+  }
+}
+
+function explodeFireball(x, y, damage) {
+  spawnParticles(x, y, '#ef4444', 20);
+  spawnParticles(x, y, '#f59e0b', 12);
+  for (const target of getAllEnemyTargets()) {
+    if (target.hp > 0 && circlesOverlap(x, y, CONFIG.FIRE_BALL_AOE_RADIUS, target.x, target.y, target.radius)) {
+      dealElementDamageToEnemy(target, damage, 'fire');
+    }
+  }
 }
 
 // ============================================================================
-// 목업 스타일 기반 캔버스 그리기 (N 증가 시 배경 테마 전환 포함)
+// 캔버스 렌더링 (목업 비주얼 + 상태이상·소환수·적 마법사 표현)
 // ============================================================================
 function render() {
   const w = CONFIG.CANVAS_WIDTH;
@@ -1357,7 +2094,7 @@ function render() {
 
   ctx.clearRect(0, 0, w, h);
 
-  // 1. 방 바닥 그리기 (보스 방은 석재 타일, 일반/마법서 방은 N 테마 바닥)
+  // 1. 배경 및 성벽
   if (roomState.type === 'BOSS') {
     const tileSize = 64;
     for (let gx = 0; gx < w; gx += tileSize) {
@@ -1370,46 +2107,61 @@ function render() {
       }
     }
   } else {
-    // 외곽 성벽 (테마별 색상)
     ctx.fillStyle = theme.wall;
     ctx.fillRect(0, 0, w, h);
 
-    // 성벽 안쪽 테두리 음영
     ctx.strokeStyle = theme.wallInner;
     ctx.lineWidth = 4;
     ctx.strokeRect(wall - 2, wall - 2, w - (wall - 2) * 2, h - (wall - 2) * 2);
 
-    // 내부 바닥 (N이 증가할 때마다 바뀌는 테마 색상)
     ctx.fillStyle = theme.floor;
     ctx.fillRect(wall, wall, w - wall * 2, h - wall * 2);
 
-    // 바닥 문양 장식
     ctx.fillStyle = theme.floorDot;
     for (const d of roomState.floorDetails) {
       ctx.fillRect(d.x, d.y, d.w, 2);
     }
   }
 
-  // 2. 위·왼쪽·오른쪽 나무 문 그리기
+  // 2. 나무 문
   for (const d of roomState.doors) {
     drawDoor(d, roomState.cleared);
   }
 
-  // 3. 마법서 방의 보물상자 및 룬 마법서 그리기
+  // 3. 풀 좌클릭 덩굴 장판 & 전기 우클릭 천둥 장판
+  for (const v of roomState.vines) {
+    drawVinePatch(v);
+  }
+  for (const tz of roomState.thunderZones) {
+    drawThunderZone(tz);
+  }
+
+  // 4. 마법서 방 오브젝트 (상자가 열려야 마법서가 나타남)
   if (roomState.type === 'SPELLBOOK' && roomState.spellbook) {
-    drawTreasureChest(roomState.spellbook.chestX, roomState.spellbook.chestY);
-    if (!roomState.spellbook.collected) {
+    drawTreasureChest(
+      roomState.spellbook.chestX,
+      roomState.spellbook.chestY,
+      roomState.spellbook.chestOpened
+    );
+    if (roomState.spellbook.chestOpened && !roomState.spellbook.collected) {
       drawSpellbook(roomState.spellbook.x, roomState.spellbook.y, roomState.spellbook.element);
     }
   }
 
-  // 4. Y좌표 깊이 정렬로 장애물·몬스터·보스·플레이어 자연스럽게 그리기
+  // 5. Y정렬 오브젝트(장애물, 식인 식물, 슬라임, 적 마법사, 보스, 플레이어)
   const renderables = [];
   for (const obs of roomState.obstacles) {
     renderables.push({ y: obs.y, draw: () => drawObstacle(obs) });
   }
+  for (const ft of roomState.flytraps) {
+    renderables.push({ y: ft.y, draw: () => drawFlytrap(ft) });
+  }
   for (const m of roomState.monsters) {
-    renderables.push({ y: m.y, draw: () => drawSlime(m) });
+    if (m.kind === 'wizard') {
+      renderables.push({ y: m.y, draw: () => drawEnemyWizard(m) });
+    } else {
+      renderables.push({ y: m.y, draw: () => drawSlime(m) });
+    }
   }
   if (roomState.boss) {
     renderables.push({ y: roomState.boss.y, draw: () => drawYetiBoss(roomState.boss) });
@@ -1421,18 +2173,9 @@ function render() {
     item.draw();
   }
 
-  // 5. 투사체 및 이펙트 그리기
+  // 6. 아군 및 적 투사체
   for (const p of roomState.projectiles) {
-    const elObj = ELEMENTS[p.element];
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-    ctx.fillStyle = elObj.color;
-    ctx.fill();
-    ctx.lineWidth = 2.5;
-    ctx.strokeStyle = '#ffffff';
-    ctx.stroke();
-    ctx.restore();
+    drawPlayerProjectile(p);
   }
 
   for (const ep of roomState.enemyProjectiles) {
@@ -1448,6 +2191,12 @@ function render() {
     ctx.restore();
   }
 
+  // 7. 연쇄 번개 및 천둥 낙뢰 이펙트
+  for (const lb of roomState.lightningBolts) {
+    drawLightningEffect(lb);
+  }
+
+  // 8. 파티클 및 데미지/상태 텍스트
   for (const pt of roomState.particles) {
     ctx.globalAlpha = Math.max(0, pt.life * 2);
     ctx.beginPath();
@@ -1459,7 +2208,7 @@ function render() {
 
   for (const ft of roomState.floatingTexts) {
     ctx.save();
-    ctx.font = 'bold 16px "Malgun Gothic", sans-serif';
+    ctx.font = 'bold 15px "Malgun Gothic", sans-serif';
     ctx.textAlign = 'center';
     ctx.lineWidth = 4;
     ctx.strokeStyle = 'rgba(255,255,255,0.92)';
@@ -1469,11 +2218,183 @@ function render() {
     ctx.restore();
   }
 
-  // 6. 좌측 상단 목업 UI (HP바 + E [주속성] Q 3칸 슬롯) 및 우측 상단 스테이지(N-M) 표시
+  // 9. 단계 전환 대형 N-M 배너
+  if (roomState.stageBanner) {
+    drawStageBanner(roomState.stageBanner);
+  }
+
+  // 10. 상단 HUD
   drawMockupHUD();
 }
 
-// 나무 문 그리기
+function drawPlayerProjectile(p) {
+  const elObj = ELEMENTS[p.element];
+  ctx.save();
+  if (p.kind === 'rock_roll' || p.kind === 'rock_charged') {
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rotation || 0);
+    ctx.beginPath();
+    ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
+    ctx.fillStyle = p.kind === 'rock_charged' ? '#78350f' : '#92400e';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = p.kind === 'rock_charged' ? '#fbbf24' : '#451a03';
+    ctx.stroke();
+    // 바위 균열 무늬
+    ctx.beginPath();
+    ctx.moveTo(-p.radius * 0.5, -p.radius * 0.2);
+    ctx.lineTo(p.radius * 0.4, p.radius * 0.3);
+    ctx.strokeStyle = '#d6b899';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  } else if (p.kind === 'water_prison') {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(59, 130, 246, 0.55)';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#eff6ff';
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fillStyle = elObj.color;
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#ffffff';
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawVinePatch(v) {
+  ctx.save();
+  ctx.globalAlpha = Math.min(0.85, v.life + 0.25);
+  ctx.beginPath();
+  ctx.arc(v.x, v.y, v.radius, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(34, 197, 94, 0.25)';
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#15803d';
+  ctx.setLineDash([7, 5]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 덩굴 가시 줄기
+  for (let k = 0; k < 6; k++) {
+    const a = (Math.PI * 2 * k) / 6;
+    ctx.beginPath();
+    ctx.moveTo(v.x, v.y);
+    ctx.quadraticCurveTo(
+      v.x + Math.cos(a + 0.4) * v.radius * 0.55,
+      v.y + Math.sin(a + 0.4) * v.radius * 0.55,
+      v.x + Math.cos(a) * v.radius * 0.85,
+      v.y + Math.sin(a) * v.radius * 0.85
+    );
+    ctx.strokeStyle = '#166534';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawFlytrap(ft) {
+  ctx.save();
+  // 공격 사거리 은은한 원
+  ctx.beginPath();
+  ctx.arc(ft.x, ft.y, CONFIG.FLYTRAP_RANGE, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(22, 163, 74, 0.22)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // 줄기
+  ctx.beginPath();
+  ctx.moveTo(ft.x, ft.y + 18);
+  ctx.lineTo(ft.x, ft.y - 4);
+  ctx.strokeStyle = '#15803d';
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  // 식인 식물 입(머리)
+  const biteScale = ft.biteAnim > 0 ? 1.28 : 1.0;
+  ctx.translate(ft.x, ft.y - 8);
+  ctx.scale(biteScale, biteScale);
+  ctx.beginPath();
+  ctx.arc(0, 0, 15, 0.25 * Math.PI, 1.75 * Math.PI);
+  ctx.lineTo(0, 0);
+  ctx.closePath();
+  ctx.fillStyle = '#dc2626';
+  ctx.fill();
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = '#14532d';
+  ctx.stroke();
+
+  // 남은 유지시간 바
+  ctx.scale(1 / biteScale, 1 / biteScale);
+  const bw = 34;
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillRect(-bw / 2, 22, bw, 4);
+  ctx.fillStyle = '#22c55e';
+  ctx.fillRect(-bw / 2, 22, bw * Math.max(0, ft.life / ft.maxLife), 4);
+  ctx.restore();
+}
+
+function drawThunderZone(tz) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(tz.x, tz.y, tz.radius, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(250, 204, 21, 0.16)';
+  ctx.fill();
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = '#eab308';
+  ctx.setLineDash([8, 6]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 남은 지속시간 원호 게이지
+  const ratio = Math.max(0, tz.life / tz.maxLife);
+  ctx.beginPath();
+  ctx.arc(tz.x, tz.y, tz.radius - 5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * ratio);
+  ctx.strokeStyle = '#fef08a';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawLightningEffect(lb) {
+  ctx.save();
+  if (lb.type === 'chain') {
+    ctx.beginPath();
+    ctx.moveTo(lb.x1, lb.y1);
+    const midX = (lb.x1 + lb.x2) / 2 + (Math.random() - 0.5) * 26;
+    const midY = (lb.y1 + lb.y2) / 2 + (Math.random() - 0.5) * 26;
+    ctx.lineTo(midX, midY);
+    ctx.lineTo(lb.x2, lb.y2);
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+  } else if (lb.type === 'thunder') {
+    // 범위 원 + 하늘에서 내리치는 번개 기둥
+    ctx.beginPath();
+    ctx.arc(lb.x, lb.y, lb.radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(250, 204, 21, 0.32)';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#eab308';
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(lb.x - 12, 0);
+    ctx.lineTo(lb.x + 14, lb.y * 0.45);
+    ctx.lineTo(lb.x - 10, lb.y * 0.72);
+    ctx.lineTo(lb.x, lb.y);
+    ctx.strokeStyle = '#fef08a';
+    ctx.lineWidth = 7;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawDoor(d, isOpen) {
   ctx.save();
   ctx.fillStyle = isOpen ? '#8c5828' : '#593718';
@@ -1482,7 +2403,6 @@ function drawDoor(d, isOpen) {
   ctx.fillRect(d.x, d.y, d.w, d.h);
   ctx.strokeRect(d.x, d.y, d.w, d.h);
 
-  // 문 판자 결
   ctx.beginPath();
   if (d.side === 'top') {
     ctx.moveTo(d.x + d.w / 2, d.y);
@@ -1495,13 +2415,11 @@ function drawDoor(d, isOpen) {
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // 문 손잡이
   ctx.beginPath();
   ctx.arc(d.x + d.w * 0.72, d.y + d.h * 0.55, 3.5, 0, Math.PI * 2);
   ctx.fillStyle = isOpen ? '#fbbf24' : '#1f2937';
   ctx.fill();
 
-  // 문 개방 시 안내 라벨 표시
   if (isOpen) {
     ctx.font = 'bold 13px "Malgun Gothic", sans-serif';
     ctx.textAlign = 'center';
@@ -1516,17 +2434,14 @@ function drawDoor(d, isOpen) {
   ctx.restore();
 }
 
-// 고대 석주/바위 장애물 그리기
 function drawObstacle(obs) {
   ctx.save();
-  // 바닥 그림자
   ctx.beginPath();
   ctx.ellipse(obs.x, obs.y + obs.radius * 0.75, obs.radius * 0.95, obs.radius * 0.42, 0, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(0,0,0,0.22)';
   ctx.fill();
 
   if (obs.kind === 'pillar') {
-    // 고대 석주 기둥
     ctx.fillStyle = '#8b9296';
     ctx.strokeStyle = '#3f4447';
     ctx.lineWidth = 3;
@@ -1535,12 +2450,10 @@ function drawObstacle(obs) {
     ctx.fill();
     ctx.stroke();
 
-    // 상단 석판
     ctx.fillStyle = '#a6aeb3';
     ctx.fillRect(obs.x - obs.radius * 0.85, obs.y - obs.radius * 1.25, obs.radius * 1.7, 12);
     ctx.strokeRect(obs.x - obs.radius * 0.85, obs.y - obs.radius * 1.25, obs.radius * 1.7, 12);
   } else {
-    // 둥근 고대 바위
     ctx.fillStyle = '#7e8487';
     ctx.strokeStyle = '#3b3f42';
     ctx.lineWidth = 3;
@@ -1549,7 +2462,6 @@ function drawObstacle(obs) {
     ctx.fill();
     ctx.stroke();
 
-    // 바위 하이라이트
     ctx.beginPath();
     ctx.arc(obs.x - obs.radius * 0.28, obs.y - obs.radius * 0.35, obs.radius * 0.25, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
@@ -1558,49 +2470,43 @@ function drawObstacle(obs) {
   ctx.restore();
 }
 
-// 뾰족한 마법사 모자와 지팡이를 든 스틱맨 마법사 그리기
 function drawStickWizard() {
   ctx.save();
   const x = player.x;
   const y = player.y;
   const elObj = ELEMENTS[getCurrentElement()];
 
-  // 무적 점멸 효과
   if (player.invulnTimer > 0 && Math.floor(player.invulnTimer * 18) % 2 === 0) {
     ctx.globalAlpha = 0.45;
   }
 
-  // 그림자
   ctx.beginPath();
-  ctx.ellipse(x, y + 22, 16, 6, 0, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.ellipse(x, y + 22, 18, 7, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.28)';
   ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = elObj.color;
+  ctx.stroke();
 
   const walkSwing = Math.sin(player.walkAnim) * 5;
 
-  // 몸통 & 팔다리 (스틱맨 스타일)
   ctx.strokeStyle = '#1e1e1e';
   ctx.lineWidth = 3.2;
   ctx.lineCap = 'round';
 
-  // 몸통
   ctx.beginPath();
   ctx.moveTo(x, y - 6);
   ctx.lineTo(x, y + 11);
-  // 다리
   ctx.moveTo(x, y + 11);
   ctx.lineTo(x - 8, y + 21 + walkSwing * 0.4);
   ctx.moveTo(x, y + 11);
   ctx.lineTo(x + 8, y + 21 - walkSwing * 0.4);
-  // 왼팔
   ctx.moveTo(x, y - 1);
   ctx.lineTo(x - 11, y + 7);
-  // 오른팔 (지팡이 잡는 팔)
   ctx.moveTo(x, y - 1);
   ctx.lineTo(x + 12, y + 4);
   ctx.stroke();
 
-  // 나무 마법 지팡이 & 끝부분 원소 보석 빛
   ctx.beginPath();
   ctx.moveTo(x + 14, y + 21);
   ctx.lineTo(x + 16, y - 14);
@@ -1613,7 +2519,6 @@ function drawStickWizard() {
   ctx.fillStyle = elObj.color;
   ctx.fill();
 
-  // 머리 (동그라미)
   ctx.beginPath();
   ctx.arc(x, y - 14, 9, 0, Math.PI * 2);
   ctx.fillStyle = '#ffffff';
@@ -1622,16 +2527,14 @@ function drawStickWizard() {
   ctx.lineWidth = 2.8;
   ctx.stroke();
 
-  // 뾰족한 마법사 모자
   ctx.fillStyle = '#27292e';
   ctx.strokeStyle = '#111214';
   ctx.lineWidth = 2.2;
-  // 모자 챙
   ctx.beginPath();
   ctx.ellipse(x, y - 21, 16, 4.5, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
-  // 모자 고깔
+
   ctx.beginPath();
   ctx.moveTo(x - 10, y - 21);
   ctx.lineTo(x + 2, y - 41);
@@ -1640,70 +2543,181 @@ function drawStickWizard() {
   ctx.fill();
   ctx.stroke();
 
+  // 바위 우클릭 차징 게이지 표시
+  if (player.isChargingRock) {
+    const ratio = player.rockChargeTime / CONFIG.ROCK_CHARGE_MAX_TIME;
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillRect(x - 24, y - 54, 48, 7);
+    ctx.fillStyle = ratio >= 1 ? '#fbbf24' : '#d97706';
+    ctx.fillRect(x - 24, y - 54, 48 * ratio, 7);
+  }
+
+  // 플레이어 속박 이펙트
+  if (player.trapTimer > 0) {
+    ctx.beginPath();
+    ctx.arc(x, y - 6, 26, 0, Math.PI * 2);
+    ctx.fillStyle = player.trapType === 'bubble' ? 'rgba(59, 130, 246, 0.35)' : 'rgba(34, 197, 94, 0.35)';
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = player.trapType === 'bubble' ? '#2563eb' : '#15803d';
+    ctx.stroke();
+  }
+
   ctx.restore();
 }
 
-// 표정이 있는 젤리 슬라임 몬스터 그리기
+// 3번 분열하는 원소 슬라임 그리기
 function drawSlime(m) {
   ctx.save();
   const elObj = ELEMENTS[m.element];
-  const squish = Math.sin(m.bobPhase) * 2.5;
+  const floatOffset = (m.trapTimer > 0 && m.trapType === 'bubble') ? -12 : 0;
+  const squish = Math.sin(m.bobPhase) * 2;
+  const r = m.radius;
 
-  // 바닥 그림자
   ctx.beginPath();
-  ctx.ellipse(m.x, m.y + 20, m.radius * 0.95, 7, 0, 0, Math.PI * 2);
+  ctx.ellipse(m.x, m.y + r * 0.78, r * 0.95, Math.max(4, r * 0.27), 0, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(0,0,0,0.2)';
   ctx.fill();
 
-  // 슬라임 몸체
+  const cy = m.y + floatOffset;
   ctx.beginPath();
-  ctx.moveTo(m.x - m.radius - squish, m.y + 16);
+  ctx.moveTo(m.x - r - squish, cy + r * 0.6);
   ctx.bezierCurveTo(
-    m.x - m.radius, m.y - m.radius * 1.1 + squish,
-    m.x + m.radius, m.y - m.radius * 1.1 + squish,
-    m.x + m.radius + squish, m.y + 16
+    m.x - r, cy - r * 1.1 + squish,
+    m.x + r, cy - r * 1.1 + squish,
+    m.x + r + squish, cy + r * 0.6
   );
   ctx.closePath();
   ctx.fillStyle = m.hitFlash > 0 ? '#ffffff' : elObj.lightColor;
   ctx.fill();
-  ctx.lineWidth = 2.8;
+  ctx.lineWidth = 2.5;
   ctx.strokeStyle = elObj.color;
   ctx.stroke();
 
-  // 귀여운 눈과 입
+  // 눈 & 입
+  const eyeScale = r / 26;
   ctx.fillStyle = '#1e293b';
   ctx.beginPath();
-  ctx.arc(m.x - 7, m.y - 2, 3.2, 0, Math.PI * 2);
-  ctx.arc(m.x + 7, m.y - 2, 3.2, 0, Math.PI * 2);
+  ctx.arc(m.x - 7 * eyeScale, cy - 2 * eyeScale, Math.max(1.8, 3.2 * eyeScale), 0, Math.PI * 2);
+  ctx.arc(m.x + 7 * eyeScale, cy - 2 * eyeScale, Math.max(1.8, 3.2 * eyeScale), 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.beginPath();
-  ctx.arc(m.x, m.y + 4, 4, 0, Math.PI);
-  ctx.strokeStyle = '#1e293b';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // 머리 위 속성 아이콘 & 체력바
-  ctx.font = '15px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(elObj.icon, m.x, m.y - 34);
-
-  const barW = 42;
-  ctx.fillStyle = 'rgba(0,0,0,0.5)';
-  ctx.fillRect(m.x - barW / 2, m.y - 28, barW, 5);
-  ctx.fillStyle = elObj.color;
-  ctx.fillRect(m.x - barW / 2, m.y - 28, barW * Math.max(0, m.hp / m.maxHp), 5);
-
+  drawEnemyStatusOverlay(m, cy, r);
   ctx.restore();
 }
 
-// 6번째 방(N-5)의 거대 갈색 예티 보스 그리기
+// 원소 마법을 사용하는 적 마법사 그리기
+function drawEnemyWizard(m) {
+  ctx.save();
+  const elObj = ELEMENTS[m.element];
+  const floatOffset = (m.trapTimer > 0 && m.trapType === 'bubble') ? -12 : 0;
+  const x = m.x;
+  const y = m.y + floatOffset;
+
+  ctx.beginPath();
+  ctx.ellipse(x, m.y + 22, 16, 6, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.fill();
+
+  // 원소 색 망토 로브
+  ctx.fillStyle = m.hitFlash > 0 ? '#ffffff' : elObj.color;
+  ctx.strokeStyle = '#1f2937';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x - 12, y + 18);
+  ctx.lineTo(x - 6, y - 6);
+  ctx.lineTo(x + 6, y - 6);
+  ctx.lineTo(x + 12, y + 18);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // 마법 지팡이
+  ctx.beginPath();
+  ctx.moveTo(x - 14, y + 18);
+  ctx.lineTo(x - 16, y - 14);
+  ctx.strokeStyle = '#451a03';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x - 16, y - 16, 4.5, 0, Math.PI * 2);
+  ctx.fillStyle = elObj.lightColor;
+  ctx.fill();
+
+  // 머리 & 뾰족 마법사 모자
+  ctx.beginPath();
+  ctx.arc(x, y - 14, 8.5, 0, Math.PI * 2);
+  ctx.fillStyle = '#fde68a';
+  ctx.fill();
+  ctx.strokeStyle = '#1f2937';
+  ctx.lineWidth = 2.2;
+  ctx.stroke();
+
+  ctx.fillStyle = elObj.color;
+  ctx.beginPath();
+  ctx.ellipse(x, y - 20, 15, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(x - 9, y - 20);
+  ctx.lineTo(x - 2, y - 39);
+  ctx.lineTo(x + 9, y - 20);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  drawEnemyStatusOverlay(m, y, m.radius);
+  ctx.restore();
+}
+
+// 적 머리 위 속성·상태이상(화상/젖음/물방울 감옥/덩굴 속박)·체력바 공통 그리기
+function drawEnemyStatusOverlay(m, cy, r) {
+  const elObj = ELEMENTS[m.element];
+
+  // 물방울 감옥 또는 덩굴 속박 시각 효과
+  if (m.trapTimer > 0) {
+    ctx.beginPath();
+    ctx.arc(m.x, cy, r + 9, 0, Math.PI * 2);
+    if (m.trapType === 'bubble') {
+      ctx.fillStyle = 'rgba(59, 130, 246, 0.38)';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#eff6ff';
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = 'rgba(34, 197, 94, 0.30)';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#15803d';
+      ctx.stroke();
+    }
+  }
+
+  // 상태이상 아이콘 표시 (속성 + 화상 중첩 + 젖음)
+  let statusBadge = elObj.icon;
+  if (m.burnStacks > 0) statusBadge += `🔥${m.burnStacks}`;
+  if (m.wetTimer > 0) statusBadge += '💧';
+
+  ctx.font = 'bold 13px "Malgun Gothic", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#111827';
+  ctx.fillText(statusBadge, m.x, cy - r - 14);
+
+  const barW = Math.max(30, r * 1.6);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(m.x - barW / 2, cy - r - 9, barW, 5);
+  ctx.fillStyle = elObj.color;
+  ctx.fillRect(m.x - barW / 2, cy - r - 9, barW * Math.max(0, m.hp / m.maxHp), 5);
+}
+
 function drawYetiBoss(b) {
   ctx.save();
   const elObj = ELEMENTS[b.element];
+  const floatOffset = (b.trapTimer > 0 && b.trapType === 'bubble') ? -10 : 0;
   const bob = Math.sin(b.walkPhase) * 3;
+  const by = b.y + floatOffset;
 
-  // 거대 그림자
   ctx.beginPath();
   ctx.ellipse(b.x, b.y + 52, 48, 13, 0, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(0,0,0,0.28)';
@@ -1713,91 +2727,121 @@ function drawYetiBoss(b) {
   ctx.strokeStyle = '#3b210e';
   ctx.lineWidth = 3.5;
 
-  // 양팔
   ctx.beginPath();
-  ctx.roundRect(b.x - 58, b.y - 18 + bob, 20, 46, 10);
-  ctx.roundRect(b.x + 38, b.y - 18 - bob, 20, 46, 10);
+  ctx.roundRect(b.x - 58, by - 18 + bob, 20, 46, 10);
+  ctx.roundRect(b.x + 38, by - 18 - bob, 20, 46, 10);
   ctx.fill();
   ctx.stroke();
 
-  // 양다리
   ctx.beginPath();
-  ctx.roundRect(b.x - 28, b.y + 24, 20, 28, 8);
-  ctx.roundRect(b.x + 8, b.y + 24, 20, 28, 8);
+  ctx.roundRect(b.x - 28, by + 24, 20, 28, 8);
+  ctx.roundRect(b.x + 8, by + 24, 20, 28, 8);
   ctx.fill();
   ctx.stroke();
 
-  // 거대한 털북숭이 몸통
   ctx.beginPath();
-  ctx.ellipse(b.x, b.y + 2, 40, 38, 0, 0, Math.PI * 2);
+  ctx.ellipse(b.x, by + 2, 40, 38, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
-  // 머리
   ctx.beginPath();
-  ctx.arc(b.x, b.y - 34, 24, 0, Math.PI * 2);
+  ctx.arc(b.x, by - 34, 24, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
-  // 얼굴 표정
   ctx.fillStyle = '#d6b293';
   ctx.beginPath();
-  ctx.ellipse(b.x, b.y - 31, 16, 12, 0, 0, Math.PI * 2);
+  ctx.ellipse(b.x, by - 31, 16, 12, 0, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = '#111827';
   ctx.beginPath();
-  ctx.arc(b.x - 6, b.y - 34, 2.8, 0, Math.PI * 2);
-  ctx.arc(b.x + 6, b.y - 34, 2.8, 0, Math.PI * 2);
+  ctx.arc(b.x - 6, by - 34, 2.8, 0, Math.PI * 2);
+  ctx.arc(b.x + 6, by - 34, 2.8, 0, Math.PI * 2);
   ctx.fill();
 
-  // 보스 속성 오라 및 머리 위 체력바
-  ctx.font = '20px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(`${elObj.icon} 원소 예티 보스`, b.x, b.y - 74);
+  if (b.trapTimer > 0) {
+    ctx.beginPath();
+    ctx.arc(b.x, by - 4, 62, 0, Math.PI * 2);
+    ctx.fillStyle = b.trapType === 'bubble' ? 'rgba(59, 130, 246, 0.35)' : 'rgba(34, 197, 94, 0.30)';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = b.trapType === 'bubble' ? '#eff6ff' : '#15803d';
+    ctx.stroke();
+  }
 
-  const barW = 110;
+  let statusBadge = `${elObj.icon} 원소 예티 보스`;
+  if (b.burnStacks > 0) statusBadge += ` 🔥${b.burnStacks}`;
+  if (b.wetTimer > 0) statusBadge += ' 💧';
+
+  ctx.font = 'bold 18px "Malgun Gothic", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#111827';
+  ctx.fillText(statusBadge, b.x, by - 74);
+
+  const barW = 115;
   ctx.fillStyle = 'rgba(0,0,0,0.65)';
-  ctx.fillRect(b.x - barW / 2, b.y - 66, barW, 9);
+  ctx.fillRect(b.x - barW / 2, by - 66, barW, 9);
   ctx.fillStyle = elObj.color;
-  ctx.fillRect(b.x - barW / 2, b.y - 66, barW * Math.max(0, b.hp / b.maxHp), 9);
+  ctx.fillRect(b.x - barW / 2, by - 66, barW * Math.max(0, b.hp / b.maxHp), 9);
 
   ctx.restore();
 }
 
-// 열린 보물상자 그리기 (목업 1 반영)
-function drawTreasureChest(x, y) {
+function drawTreasureChest(x, y, isOpened = false) {
   ctx.save();
+  // 바닥 그림자
+  ctx.beginPath();
+  ctx.ellipse(x, y + 30, 42, 10, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.fill();
+
+  // 상자 몸통
   ctx.fillStyle = '#8b5a2b';
   ctx.strokeStyle = '#3b230e';
   ctx.lineWidth = 3;
-  // 상자 본체
-  ctx.fillRect(x - 36, y - 16, 72, 44);
-  ctx.strokeRect(x - 36, y - 16, 72, 44);
-  // 열린 뚜껑
-  ctx.fillStyle = '#a06a35';
-  ctx.fillRect(x - 38, y - 38, 76, 22);
-  ctx.strokeRect(x - 38, y - 38, 76, 22);
-  // 금속 자물쇠
-  ctx.fillStyle = '#cbd5e1';
-  ctx.fillRect(x - 8, y - 12, 16, 16);
-  ctx.strokeRect(x - 8, y - 12, 16, 16);
+  ctx.fillRect(x - 36, y - 14, 72, 42);
+  ctx.strokeRect(x - 36, y - 14, 72, 42);
+
+  if (!isOpened) {
+    // 닫힌 상자 뚜껑 + 자물쇠
+    ctx.fillStyle = '#a06a35';
+    ctx.fillRect(x - 38, y - 36, 76, 22);
+    ctx.strokeRect(x - 38, y - 36, 76, 22);
+
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillRect(x - 8, y - 18, 16, 18);
+    ctx.strokeRect(x - 8, y - 18, 16, 18);
+
+    ctx.font = 'bold 13px "Malgun Gothic", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.strokeText('📦 다가가서 상자 열기', x, y - 46);
+    ctx.fillStyle = '#78350f';
+    ctx.fillText('📦 다가가서 상자 열기', x, y - 46);
+  } else {
+    // 열린 상자 내부 어두운 공간 + 뒤로 젖혀진 뚜껑
+    ctx.fillStyle = '#291709';
+    ctx.fillRect(x - 32, y - 22, 64, 12);
+
+    ctx.fillStyle = '#a06a35';
+    ctx.fillRect(x - 38, y - 44, 76, 18);
+    ctx.strokeRect(x - 38, y - 44, 76, 18);
+  }
   ctx.restore();
 }
 
-// 보라색 룬 마법서 그리기 (목업 1 반영)
 function drawSpellbook(x, y, element) {
   ctx.save();
   const elObj = ELEMENTS[element];
   const floatY = y + Math.sin(performance.now() * 0.005) * 4;
 
-  // 마법 빛 후광
   ctx.beginPath();
   ctx.arc(x, floatY, 34, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(139, 92, 246, 0.22)';
   ctx.fill();
 
-  // 책 표지
   ctx.fillStyle = '#583b6e';
   ctx.strokeStyle = '#281836';
   ctx.lineWidth = 3;
@@ -1806,12 +2850,10 @@ function drawSpellbook(x, y, element) {
   ctx.fill();
   ctx.stroke();
 
-  // 금장 모서리
   ctx.fillStyle = '#fbbf24';
   ctx.fillRect(x + 12, floatY - 28, 10, 10);
   ctx.fillRect(x + 12, floatY + 18, 10, 10);
 
-  // 중앙 속성 아이콘
   ctx.font = '24px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(elObj.icon, x, floatY + 9);
@@ -1822,7 +2864,55 @@ function drawSpellbook(x, y, element) {
   ctx.restore();
 }
 
-// 좌측 상단 목업 UI (HP바 + E [주속성] Q 3칸 슬롯) 및 우측 상단 스테이지(N-M) 표시
+function drawStageBanner(banner) {
+  ctx.save();
+  const progress = 1 - (banner.life / banner.maxLife);
+  // 초반 0.15초 페이드인, 마지막 0.35초 페이드아웃
+  let alpha = 1;
+  if (progress < 0.12) alpha = progress / 0.12;
+  else if (banner.life < 0.45) alpha = Math.max(0, banner.life / 0.45);
+
+  ctx.globalAlpha = alpha;
+  const cx = CONFIG.CANVAS_WIDTH / 2;
+  const cy = CONFIG.CANVAS_HEIGHT * 0.42;
+
+  // 반투명 다크 배너 배경
+  const boxW = 360;
+  const boxH = banner.healText ? 142 : 114;
+  ctx.fillStyle = 'rgba(17, 24, 39, 0.84)';
+  ctx.strokeStyle = '#ffd166';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.roundRect(cx - boxW / 2, cy - boxH / 2, boxW, boxH, 16);
+  ctx.fill();
+  ctx.stroke();
+
+  // 크게 표시되는 N-M 텍스트
+  ctx.textAlign = 'center';
+  ctx.font = '900 58px "Malgun Gothic", sans-serif';
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = '#111827';
+  ctx.strokeText(banner.text, cx, cy + 12);
+  ctx.fillStyle = '#ffd166';
+  ctx.fillText(banner.text, cx, cy + 12);
+
+  // 테마/보스 부제
+  if (banner.subText) {
+    ctx.font = 'bold 16px "Malgun Gothic", sans-serif';
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillText(banner.subText, cx, cy - 34);
+  }
+
+  // 체력 회복 안내
+  if (banner.healText) {
+    ctx.font = 'bold 18px "Malgun Gothic", sans-serif';
+    ctx.fillStyle = '#4ade80';
+    ctx.fillText(banner.healText, cx, cy + 46);
+  }
+
+  ctx.restore();
+}
+
 function drawMockupHUD() {
   ctx.save();
 
@@ -1847,7 +2937,7 @@ function drawMockupHUD() {
   ctx.textAlign = 'center';
   ctx.fillText(`${player.hp}/${player.maxHp}`, hpX + hpW / 2, hpY + 16);
 
-  // 2. 좌측 상단 E [현재 주속성] Q 3칸 마법 슬롯
+  // 2. 좌측 상단 E [주속성] Q 3칸 마법 슬롯
   const len = player.unlockedElements.length;
   const curIdx = player.currentSlotIndex;
   const prevIdx = (curIdx - 1 + len) % len;
@@ -1857,18 +2947,17 @@ function drawMockupHUD() {
   const curEl = ELEMENTS[player.unlockedElements[curIdx]];
   const nextEl = ELEMENTS[player.unlockedElements[nextIdx]];
 
-  // 왼쪽 E 슬롯
   drawSlotBox(28, 48, 44, 44, prevEl, 'E', false);
-  // 중앙 주속성 슬롯 (크게 강조)
   drawSlotBox(78, 42, 56, 56, curEl, '', true);
-  // 오른쪽 Q 슬롯
   drawSlotBox(140, 48, 44, 44, nextEl, 'Q', false);
 
-  // 우클릭 스킬 및 대쉬 쿨타임 상태 미니 표시
+  // 우클릭 스킬 및 대쉬 상태 표시
   ctx.textAlign = 'left';
   ctx.font = 'bold 12px "Malgun Gothic", sans-serif';
   ctx.fillStyle = '#1e293b';
-  const skillReady = player.skillTimer <= 0 ? '준비 완료!' : `${player.skillTimer.toFixed(1)}초`;
+  const skillReady = player.isChargingRock
+    ? `차징 중 (${player.rockChargeTime.toFixed(1)}초)`
+    : (player.skillTimer <= 0 ? '준비 완료!' : `${player.skillTimer.toFixed(1)}초`);
   const dashReady = player.dashCooldownTimer <= 0 ? '준비 완료!' : `${player.dashCooldownTimer.toFixed(1)}초`;
   ctx.fillText(`우클릭(${curEl.skillName}): ${skillReady}  |  대쉬(Space): ${dashReady}`, 208, 29);
 
